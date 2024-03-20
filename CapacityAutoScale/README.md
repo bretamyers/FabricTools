@@ -4,7 +4,7 @@ A solution to automate the scaling of a capacity based on the consumption of the
 
 <br>
 
-**Target Scenarios**
+#### Target Scenarios
 - Development environments typically don’t have a consistent workload day to day.
 - PoC/MVP where you to a day zero load of data with high usage and have gaps in days when the solution is worked on.
 - Production environment when there is inconsistent user activity day to day where users run different load sizes.
@@ -15,7 +15,8 @@ A solution to automate the scaling of a capacity based on the consumption of the
 ## Prerequisites
 - An Azure service principal
 - A Fabric capacity created within the Azure portal and assign the service principal as a capacity admin.
-- Enable the "Allow service principals to create and use profiles" setting in the admin portal of Microsoft Fabric.
+- Enable of **User can create Fabric items** within the admin port of Microsoft Fabric.
+- Enable the **Allow service principals to create and use profiles** setting in the admin portal of Microsoft Fabric.
 - Deployment of the Fabric Capacity Metrics App as a workspace.
 - Grant admin access to the service principal for the workspace that the Fabric Capacity Metircs App is deployed within.
 
@@ -23,9 +24,10 @@ A solution to automate the scaling of a capacity based on the consumption of the
 
 ## How to Deploy
 - Log into **[app.fabric.microsoft.com](https://app.fabric.microsoft.com/home?experience=data-engineering)** and navigate to the Data Engineering persona.
-- Within the Data Engineering persona landing page, click on the "Import notebook" icon.
+- Within the Data Engineering persona landing page, click on the **Import notebook** icon.
 - Upload the **NB_CapacityAutoScale.ipynb** file. This will upload the notebook to the Fabric workspace.
-- Update the parameters within the NB_CapacityAutoScale notebook.
+- In first cell, update the parameters within the NB_CapacityAutoScale notebook.
+- In the second cell, update the **tenantId**, **clientId**, and **secret** values to match those of the service principal. Note, the notebook includes code to acquire values from an Azure Key Vault if you want to keep the crendentials of the service principal secure.
 - Schedule the notebook to run by clicking on the **Run** tab at the top and click on the **Schedule** button. Turn on the scheduled run and add a frequency for how often you want to the notebook to run. 
 
 <br>
@@ -38,4 +40,11 @@ A solution to automate the scaling of a capacity based on the consumption of the
 - **subscriptionId** - The Azure subscription id that the Fabric capacity is created within.
 - **metricsAppWorkspaceName** - The workspace that the Fabric Capacity Metrics App is deployed.
 - **metricsAppModelName** - The semantic model that the Fabric Capacity Metrics App uses. The default name is "Fabric Capacity Metrics".
+
+<br>
+
+## Additional Resources
+- **Operation Categorizations** - https://learn.microsoft.com/en-us/fabric/enterprise/fabric-operations#fabric-operations-by-experience
+
+- **Throttling Rules** - https://learn.microsoft.com/en-us/fabric/enterprise/throttling#future-smoothed-consumption  
 
