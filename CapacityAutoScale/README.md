@@ -1,6 +1,6 @@
 # Microsoft Fabric Capacity Autoscale
 
-A solution to automate the scaling of a capacity based on the consumption of the capacity units to stay within the bounds of a capacity and to be cost effective as possible. A Fabric capacity has a concept of bursting and smoothing capacity units over a period of time. This works great when the workload is consistent day to day but does not handle for scenarios for unexpected or inconsitent loads. 
+A solution to automate the scaling of a capacity based on the consumption of the capacity units to stay within the bounds of the capacity to be price optimized. A Fabric capacity has a concept of bursting and smoothing capacity units over a period of time. This works great when the workload is consistent day to day but does not handle for scenarios for unexpected or inconsitent loads. 
 
 <br>
 
