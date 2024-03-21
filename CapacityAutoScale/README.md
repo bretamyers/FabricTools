@@ -1,14 +1,14 @@
 # Microsoft Fabric Capacity Autoscale
 
-A solution to automate the scaling of a capacity based on the consumption of the capacity units to stay within the bounds of the capacity to be price optimized. A Fabric capacity has a concept of bursting and smoothing capacity units over a period of time. This works great when the workload is consistent day to day but does not handle for scenarios for unexpected or inconsitent loads. 
+A solution to automate the scaling of a capacity based on the consumption of the capacity units to stay within the bounds of the capacity for cost optimization. A Fabric capacity has a concept of bursting and smoothing capacity units over a period of time. This works great when the workload is consistent day to day but does not handle for scenarios for unexpected or inconsitent loads. 
 
 <br>
 
 #### Target Scenarios
-- Development environments typically don’t have a consistent workload day to day.
+- Environments typically don’t have a consistent workload day to day.
 - PoC/MVP where you to a day zero load of data with high usage and have gaps in days when the solution is worked on.
-- Production environment when there is inconsistent user activity day to day where users run different load sizes.
-- Production workload where there are abnormal workloads throughout the month. Example, month end activities require larger loads for data reconciliation.
+- Environment when there is inconsistent user activity day to day where users run different load sizes.
+- Environments where there are inconsitent workloads throughout the month. Example, month end activities which may require larger data loads for data reconciliation and higher consumption of reports.
 
 <br>
 
@@ -29,6 +29,7 @@ A solution to automate the scaling of a capacity based on the consumption of the
 - In first cell, update the parameters within the NB_CapacityAutoScale notebook.
 - In the second cell, update the **tenantId**, **clientId**, and **secret** values to match those of the service principal. Note, the notebook includes code to acquire values from an Azure Key Vault if you want to keep the crendentials of the service principal secure.
 - Schedule the notebook to run by clicking on the **Run** tab at the top and click on the **Schedule** button. Turn on the scheduled run and add a frequency for how often you want to the notebook to run. 
+> Note: The defined deployment steps are for deploying the code as a notebook within a Fabric workspace but the code can be deployed and executed outside of a Fabric notebook. Example, running the code as a python runbook within Azure Automation.
 
 <br>
 
