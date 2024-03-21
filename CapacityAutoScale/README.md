@@ -1,4 +1,4 @@
-# Microsoft Fabric Capacity Autoscale
+# Microsoft Fabric Capacity Autoscaler
 
 A solution to automate the scaling of a capacity based on the consumption of the capacity units to stay within the bounds of the capacity for cost optimization. A Fabric capacity has a concept of bursting and smoothing capacity units over a period of time. This works great when the workload is consistent day to day but does not handle for scenarios for unexpected or inconsitent loads. 
 
@@ -17,7 +17,7 @@ A solution to automate the scaling of a capacity based on the consumption of the
 - Refresh the Fabric Capacity Metrics App semantic model to get the latest consumption data.
 - Execute a uery the Fabric Capacity Metrics App to get the total consumption over the last 24 hours.
 - Run an API to get the current SKU setting for the capacity and match to the bucket of CUs for that SKU.
-- Calculate the optimial SKU size based off of the total consumption of the last 24 hours, the allotted bucket size of the current SKU size, the provided utilized threshold parameter, and the minimum and maximum SKU size.
+- Calculate the optimial SKU size based off of the total consumption of the last 24 hours, the allotted bucket size of the current SKU size, the provided utilized threshold parameter, and the provided minimum and maximum SKU size.
 - Perform the capacity scaling operation, up or down, from the calculated SKU size.
  
  <br>
