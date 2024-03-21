@@ -13,8 +13,27 @@ A solution to automate the scaling of a capacity based on the consumption of the
 
 <br>
 
-![image](https://github.com/bretamyers/FabricTools/assets/14877390/689c6fb0-7975-48b9-a264-a85f49ad63b3)
+#### How it works
+- Refresh the Fabric Capacity Metrics App semantic model to get the latest consumption data.
+- Execute a uery the Fabric Capacity Metrics App to get the total consumption over the last 24 hours.
+- Run an API to get the current SKU setting for the capacity and match to the bucket of CUs for that SKU.
+- Calculate the optimial SKU size based off of the total consumption of the last 24 hours, the allotted bucket size of the current SKU size, the provided utilized threshold parameter, and the minimum and maximum SKU size.
+- Perform the capacity scaling operation, up or down, from the calculated SKU size.
+ 
+ <br>
 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;![image](https://github.com/bretamyers/FabricTools/assets/14877390/689c6fb0-7975-48b9-a264-a85f49ad63b3)
+
+<br>
+
+| **Smoothed Consumption** | **Throttling Policy** | **Impact** |
+| ---------------- | ---------------- | ---------------- |
+| Usage <= 10 min | Overage Protection | Jobs can consume 10 minutes of future capacity use without throttling. |
+| 10 min < Usage <= 60 min | Interactive Delay | User-requested interactive jobs are delayed 20 sec at submission. |
+| 60 min < Usage | Interactive Rejection | User requested interactive type jobs are rejected. |
+| Usage > 24 hours | Background Rejection | All new jobs are rejected from execution. |
+
+<br>
 
 ## Prerequisites
 - An Azure service principal
