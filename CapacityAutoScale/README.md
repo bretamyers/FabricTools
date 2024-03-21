@@ -6,7 +6,7 @@ A solution to automate the scaling of a capacity based on the consumption of the
 
 #### Target Scenarios
 - Development environments typically don’t have a consistent workload day to day.
-- PoC/MVP where you to a day zero load of data with high usage and have gaps in days when the solution is worked on.
+- PoC/MVP where you have a day zero load of data with high usage and have gaps in days when the solution is worked on.
 - Production environments when there is unpredictable user activity day to day where users run different load sizes.
 - Environments where there are inconsitent workloads throughout the month. Example, month end activities which may require larger data loads for data reconciliation and higher consumption of reports.
 - Environments that have seasonal loads where theres a month or two throughout the year where within higher activity/comsumption. 
