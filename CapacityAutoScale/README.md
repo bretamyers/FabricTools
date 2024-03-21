@@ -28,7 +28,6 @@ A solution to automate the scaling of a capacity based on the consumption of the
 
 | **Smoothed Consumption** | **Throttling Policy** | **Impact** |
 | ---------------- | ---------------- | ---------------- |
-| Usage <= 10 min | Overage Protection | Jobs can consume 10 minutes of future capacity use without throttling. |
 | 10 min < Usage <= 60 min | Interactive Delay | User-requested interactive jobs are delayed 20 sec at submission. |
 | 60 min < Usage | Interactive Rejection | User requested interactive type jobs are rejected. |
 | Usage > 24 hours | Background Rejection | All new jobs are rejected from execution. |
@@ -52,7 +51,7 @@ A solution to automate the scaling of a capacity based on the consumption of the
 - In first cell, update the parameters within the NB_CapacityAutoScale notebook.
 - In the second cell, update the **tenantId**, **clientId**, and **secret** values to match those of the service principal. Note, the notebook includes code to acquire values from an Azure Key Vault if you want to keep the crendentials of the service principal secure.
 - Schedule the notebook to run by clicking on the **Run** tab at the top and click on the **Schedule** button. Turn on the scheduled run and add a frequency for how often you want to the notebook to run. 
-> Note: The defined deployment steps are for deploying the code as a notebook within a Fabric workspace but the code can be deployed and executed outside of a Fabric notebook. Example, running the code as a python runbook within Azure Automation.
+> **Note:** The defined deployment steps are for deploying the code as a notebook within a Fabric workspace but the code can be deployed and executed outside of a Fabric notebook. Example, running the code as a python runbook within Azure Automation.
 
 <br>
 
