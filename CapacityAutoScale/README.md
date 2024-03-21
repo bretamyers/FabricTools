@@ -13,7 +13,7 @@ A solution to automate the scaling of a capacity based on the consumption of the
 
 <br>
 
-![image](https://github.com/bretamyers/FabricTools/assets/14877390/b778263a-95e1-4d63-aece-22c543a9e391)
+![image](https://github.com/bretamyers/FabricTools/assets/14877390/06e15f4b-d3d7-4f4d-ab9b-a906a9367d15)
 
 
 ## Prerequisites
