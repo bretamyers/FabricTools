@@ -13,6 +13,9 @@ A solution to automate the scaling of a capacity based on the consumption of the
 
 <br>
 
+![image](https://github.com/bretamyers/FabricTools/assets/14877390/066b0433-7d6c-47e0-b630-9aacd42d43a0)
+
+
 ## Prerequisites
 - An Azure service principal
 - A Fabric capacity created within the Azure portal and assign the service principal as a capacity admin.
