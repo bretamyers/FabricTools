@@ -1,7 +1,6 @@
-
 CapacityAutoScale/SAMPLE.md
 .DS_Store
-.venv/*
+FabricAPI/.venv/*
 FabricAPI/__pycache__/*
 FabricAPI/.env.toml
 FabricAPI/test.py

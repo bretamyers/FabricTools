@@ -1,9 +1,9 @@
 import logging
 # from FabricAPI import faburest
-import sys, os
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.dirname(SCRIPT_DIR))
-from FabricAPI.faburest import fabric_rest
+# import sys, os
+# SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+# sys.path.append(os.path.dirname(SCRIPT_DIR))
+from faburest import fabric_rest
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ if __name__ == '__main__':
     
     
     ## Pipelines
-    # print(fabric_rest().pipeline_get_definition_parts(workspaceName='WS_Steve', pipelineName='PL_Simple'))
+    print(fabric_rest().pipeline_get_definition_parts(workspaceName='WS_Steve', pipelineName='PL_Simple'))
     # print(fabric_rest().pipeline_clone(workspaceNameSource='WS_Steve', pipelineNameSource='PL_Simple', workspaceNameTarget='WS_Steve', pipelineNameTarget='PL_Simple5'))
     
 
