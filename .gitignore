@@ -4,3 +4,4 @@ CapacityAutoScale/SAMPLE.md
 .venv/*
 FabricAPI/__pycache__/*
 FabricAPI/.env.toml
+FabricAPI/test.py

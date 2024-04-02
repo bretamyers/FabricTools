@@ -1,0 +1,70 @@
+import logging
+# from FabricAPI import faburest
+import sys, os
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(SCRIPT_DIR))
+from FabricAPI.faburest import fabric_rest
+
+logger = logging.getLogger(__name__)
+
+if __name__ == '__main__':
+    
+    # https://stackoverflow.com/questions/7016056/python-logging-not-outputting-anything
+    logger.addHandler(logging.StreamHandler())
+    logger.setLevel(logging.INFO)
+
+
+    ## Items
+    # print(fabric_rest().item_list(workspaceName='WS_Steve'))
+
+
+    ## Workspaces
+    # print(fabric_rest().workspace_list_response())
+    # print(fabric_rest().workspace_list())
+    # print(fabric_rest().workspace_get_id(workspaceName='WS_Steve'))
+    # print(fabric_rest().workspace_get_access_details_response(workspaceName='WS_Steve'))
+    # print(fabric_rest().workspace_get_access_details(workspaceName='WS_Steve'))
+    # print(fabric_rest().workspace_get_access_details_user(userName='sp_bam', workspaceName='WS_Steve'))
+    # print(json.dumps(fabric_rest().workspace_get_access_details_user(userName='sp_bam'), indent=4))
+    # print(json.dumps(fabric_rest().workspace_get_access_details_user(userName='admin MCAPS'), indent=4))
+    # print(json.dumps(fabric_rest().workspace_get_access_details_user(userName='Shane Ochotny'), indent=4))
+    
+
+
+    ## Users
+    ## This does not work yet as we need a way to to get the user id from entra
+    # print(fabric_rest().user_get_access_entities(userName='a4afe56e-0589-4c74-81b1-f9928ad84d30'))
+
+
+    ## Lakehouse
+    # print(fabric_rest().lakehouse_get_id(workspaceName='WS_Steve', lakehouseName='LH_InternetSales'))
+    # print(fabric_rest().lakehouse_get_object(workspaceName='WS_Steve', lakehouseName='LH_InternetSales'))
+    # print(fabric_rest().lakehouse_get_definition_response(workspaceName='WS_Steve', lakehouseName='LH_InternetSales'))
+    # print(fabric_rest().lakehouse_get_definition_parts(workspaceName='WS_Steve', lakehouseName='LH_InternetSales'))
+    # print(fabric_rest().lakehouse_create(workspaceName='WS_Steve', lakehouseName='LH_Test2'))
+    # print(fabric_rest().lakehouse_delete(workspaceName='WS_Steve', lakehouseName='LH_Test2'))
+    
+    ## TODO - Shortcut creation has some complexitites to it. 
+    ## Need to think through various scenarios to see what makes sense in the short term and long term.
+    # print(fabric_rest().lakehouse_create_shortcut_adls(workspaceName='WS_Steve', itemName='', shortcutName='', shortcutPath='', adlsPath='', adlsSubPath=''))
+    
+    
+    ## Pipelines
+    # print(fabric_rest().pipeline_get_definition_parts(workspaceName='WS_Steve', pipelineName='PL_Simple'))
+    # print(fabric_rest().pipeline_clone(workspaceNameSource='WS_Steve', pipelineNameSource='PL_Simple', workspaceNameTarget='WS_Steve', pipelineNameTarget='PL_Simple5'))
+    
+
+    ## Notebooks
+    # print(fabric_rest().notebook_get_item_definition(workspaceName='WS_Steve', notebookName='NB_Simple'))
+    # print(fabric_rest().notebook_delete(workspaceName='WS_Steve', notebookName='Notebook 3'))
+
+
+    # workspaceId = '372dfc2d-e201-49d7-a28b-7cfc015a9317'
+    # itemId = '00fb81dc-6133-45f2-9ac1-e524eac5a47f'
+    # response = requests.delete(url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}', headers=fabric_rest().header)
+    # print(response.status_code)
+    # print(response.json()) # failed because there is no body
+    # print(response.headers)
+    
+    
+    

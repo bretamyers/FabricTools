@@ -1,4 +1,4 @@
-import requests, json, logging, time
+import requests, json, logging, time, datetime, math
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ class fabric_rest():
         return {'Authorization': f'Bearer {token}', 'Content-type': 'application/json'}
 
 
-    def call_rest(self, method:str, url:str, body:dict=None) -> requests.Response:
+    def request(self, method:str, url:str, body:dict=None) -> requests.Response:
         try:
             response = requests.request(method=method, url=url, headers=self.header, data=json.dumps(body))
             logger.debug(response.json())
@@ -23,31 +23,39 @@ class fabric_rest():
                 response = self.response_long_running(response=response)
             return response
         except requests.exceptions.HTTPError as errh:
-            print ("Http Error:", errh.response.text)
+            print("Http Error:", errh.response.text)
+            ## Add a step to check if the error is due to throttling and wait until the restriction is lifted
+            if 'Request is blocked by the upstream service until:' in errh.response.json()['message']:
+                blockedDatetime = datetime.datetime.strptime(errh.response.json()['message'].split('Request is blocked by the upstream service until: ')[1], '%m/%d/%Y %I:%M:%S %p')
+                sleepDuration = math.ceil((blockedDatetime - datetime.datetime.now(datetime.UTC).replace(tzinfo=None)).total_seconds())
+                logger.info(f"Sleeping for {sleepDuration} seconds")
+                time.sleep(sleepDuration) # pause until we can make the request again
+                return self.request(method=method, url=url, body=body)
         except requests.exceptions.ConnectionError as errc:
-            print ("Error Connecting:", errc.response.text)
+            print("Error Connecting:", errc.response.text)
         except requests.exceptions.Timeout as errt:
-            print ("Timeout Error:", errt.response.text)
+            print("Timeout Error:", errt.response.text)
         except requests.exceptions.RequestException as err:
-            print ("Error", err.response.text)
+            print(response.status_code)
+            # print("Error", err.response.text)
 
 
     def response_long_running(self, response:requests.Response) -> requests.Response:
         responseLocation = response.headers.get('Location')
         for _ in range(5):
-            responseStatus = self.call_rest(method='get', url=responseLocation)
+            responseStatus = self.request(method='get', url=responseLocation)
             if responseStatus.json().get('status') != 'Succeeded':
                 logger.info(f'Operation {response.headers.get("x-ms-operation-id")} is not ready. Waiting for {response.headers.get("Retry-After")} seconds.')
                 time.sleep(int(response.headers.get('Retry-After')))
             else:
                 logger.info('Payload is ready. Requesting the result.')
-                responseResult = self.call_rest(method='get', url=f'{responseLocation}/result')
+                responseResult = self.request(method='get', url=f'{responseLocation}/result')
                 return responseResult
 
 
     def workspace_list_response(self) -> requests.Response:
         logger.info('workspace_list_response')
-        response = self.call_rest(method='get', url='https://api.fabric.microsoft.com/v1/workspaces')
+        response = self.request(method='get', url='https://api.fabric.microsoft.com/v1/workspaces')
         return response
     
 
@@ -66,12 +74,12 @@ class fabric_rest():
 
     def workspace_get_access_details_response(self, workspaceName:str) -> requests.Response:
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
-        response = self.call_rest(method='get', url=f'https://api.fabric.microsoft.com/v1/admin/workspaces/{workspaceId}/users')
+        response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/admin/workspaces/{workspaceId}/users')
         return response
     
 
     def _workspace_get_access_details_response_workspace_id(self, workspaceId:str) -> requests.Response:
-        response = self.call_rest(method='get', url=f'https://api.fabric.microsoft.com/v1/admin/workspaces/{workspaceId}/users')
+        response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/admin/workspaces/{workspaceId}/users')
         return response
 
 
@@ -85,22 +93,25 @@ class fabric_rest():
         return workspaceAccessDetail
 
 
-    # TODO - Need to add logic to loop through all workspaces and check the users permissions
-    def workspace_get_access_details_user(self, userName:str, workspaceName:str=None) -> requests.Response:
+    # TODO - Need to check if the output makes sense
+    # Might change from principal displayName to principal userDetails userPrincipalName. This field is not there for service principals though
+    def workspace_get_access_details_user(self, userName:str, workspaceName:str=None) -> list:
         if workspaceName is None:
             workspaceAccessDetails = []
             workspaceList = self.workspace_list()
             # Getting hit with throttling with so many API calls
             for workspace in workspaceList:
-                workspaceAccessDetails += [access for access in self._workspace_get_access_details_workspace_id(workspaceId=workspace.get('id')) if access.get('principal').get('displayName') == userName]
+                accessDetailsList = [access for access in self._workspace_get_access_details_workspace_id(workspaceId=workspace.get('id')) if access.get('principal').get('displayName') == userName]
+                if len(accessDetailsList) > 0:
+                    workspaceAccessDetails += [{'workspaceName': workspace.get('displayName'), 'workspaceAccessDetails': accessDetailsList}]
         else:
-            workspaceAccessDetails = [access for access in self.workspace_get_access_details(workspaceName=workspaceName) if access.get('principal').get('displayName') == userName][0]
+            workspaceAccessDetails = [{'workspaceName': workspaceName, 'workspaceAccessDetails': [access for access in self.workspace_get_access_details(workspaceName=workspaceName) if access.get('principal').get('displayName') == userName][0]}]
         return workspaceAccessDetails
     
 
     # # TODO
     # def user_get_id(self) -> str:
-    #     response = self.call_rest(method='get', url='https://api.fabric.microsoft.com/v1/admin/users')
+    #     response = self.request(method='get', url='https://api.fabric.microsoft.com/v1/admin/users')
     #     userId = [user.get('id') for user in response.json().get('value') if user.get('displayName') == userName][0]
     #     return userId
     
@@ -108,7 +119,7 @@ class fabric_rest():
     # # TODO - Need logic to get id from AAD/Entra
     # def user_get_access_entities(self, userName:str) -> requests.Response:
     #     # userId = self.users_get_id(userName=userName)
-    #     response = self.call_rest(method='get', url=f'https://api.fabric.microsoft.com/v1/admin/users/{userName}/access')
+    #     response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/admin/users/{userName}/access')
     #     return response
 
 
@@ -146,13 +157,13 @@ class fabric_rest():
 
         workspaceId = self.workspace_get_id(workspaceName=workspaceNameTarget)
         
-        response = self.call_rest(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items', body=body)
+        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items', body=body)
         return response
 
     # https://learn.microsoft.com/en-us/rest/api/fabric/admin/items/list-items?tabs=HTTP
     def notebook_get_id(self, workspaceName:str, notebookName:str) -> str:
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
-        response = self.call_rest(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items?type=Notebook')
+        response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items?type=Notebook')
         notebookId = [notebook.get('id') for notebook in response.json().get('value') if notebook.get('displayName') == notebookName][0]
         return notebookId
 
@@ -160,7 +171,7 @@ class fabric_rest():
     def notebook_get_item_definition(self, workspaceName:str, notebookName:str) -> requests.Response:
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
         notebookId = self.notebook_get_id(workspaceName=workspaceName, notebookName=notebookName)
-        response = self.call_rest(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{notebookId}/getDefinition?format=ipynb')
+        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{notebookId}/getDefinition?format=ipynb')
         definition = response.json().get('definition')
         return definition
 
@@ -173,7 +184,12 @@ class fabric_rest():
             ,"definition": notebook_get_definition
         }
         workspaceIdTarget = self.workspace_get_id(workspaceName=workspaceNameTarget)
-        response = self.call_rest(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceIdTarget}/items', body=body)
+        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceIdTarget}/items', body=body)
+        return response
+    
+
+    def notebook_delete(self, workspaceName:str, notebookName:str) -> str:
+        response = self.item_delete(workspaceName=workspaceName, itemName=notebookName)
         return response
     
 
@@ -181,7 +197,7 @@ class fabric_rest():
     def item_get_response(self, workspaceName:str, itemType:str='') -> requests.Response:
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
         itemTypeFilter = f'type={itemType}' if itemType else ''
-        response = self.call_rest(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items?{itemTypeFilter}')
+        response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items?{itemTypeFilter}')
         return response
 
 
@@ -207,7 +223,7 @@ class fabric_rest():
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
         itemId = self.item_get_id(workspaceName=workspaceName, itemName=itemName, itemType=itemType)
         # logger.info(f'item_get_definition_response {workspaceName=}:{workspaceId=} - {itemName=}:{itemId}')
-        response = self.call_rest(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/getDefinition')
+        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/getDefinition')
         return response
     
 
@@ -223,7 +239,7 @@ class fabric_rest():
                 ,**({ 'itemDefinition': itemDefinition } if itemDefinition is not None else {})
                 }
         # logger.info(f'item_create - {body=}')
-        response = self.call_rest(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items', body=body)
+        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items', body=body)
         return response
     
 
@@ -234,7 +250,7 @@ class fabric_rest():
         itemId = self.item_get_id(workspaceName=workspaceName, itemName=itemName)
         # logger.info(f'item_delete - {workspaceName=}:{workspaceId=} - {itemName=}:{itemId}')
         url = f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}'
-        response = self.call_rest(method='delete', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}')
+        response = self.request(method='delete', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}')
         return response
 
 
@@ -242,12 +258,12 @@ class fabric_rest():
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
         itemId = self.artifact_get_id(workspaceName=workspaceName, artifactName=itemName)
         # https://learn.microsoft.com/en-us/rest/api/fabric/core/onelake-shortcuts/get-shortcut?tabs=HTTP
-        response = self.call_rest(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/shortcuts/{shortcutPath}/{shortcutName}')
+        response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/shortcuts/{shortcutPath}/{shortcutName}')
         return response
     
 
     def _lakehouse_create_shortcut(self, workspaceId:str, itemId:str, body:dict) -> requests.Response:
-        response = self.call_rest(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/shortcuts', body=body)
+        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/shortcuts', body=body)
         return response
 
 
@@ -291,7 +307,7 @@ class fabric_rest():
         return response
 
     def connections_response(self, connectionName:str) -> requests.Response:
-        response = self.call_rest(method='get', url='https://api.powerbi.com/v2.0/myorg/me/gatewayClusterDatasources') #?$expand=users
+        response = self.request(method='get', url='https://api.powerbi.com/v2.0/myorg/me/gatewayClusterDatasources') #?$expand=users
         return response
 
 
@@ -346,52 +362,6 @@ class fabric_rest():
         return response
 
 
-if __name__ == '__main__':
-    
-    # https://stackoverflow.com/questions/7016056/python-logging-not-outputting-anything
-    logger.addHandler(logging.StreamHandler())
-    logger.setLevel(logging.INFO)
 
-
-    ## Items
-    # print(fabric_rest().item_list(workspaceName='WS_Steve'))
-
-
-    ## Workspaces
-    # print(fabric_rest().workspace_list_response())
-    # print(fabric_rest().workspace_list())
-    # print(fabric_rest().workspace_get_id(workspaceName='WS_Steve'))
-    # print(fabric_rest().workspace_get_access_details_response(workspaceName='WS_Steve'))
-    # print(fabric_rest().workspace_get_access_details(workspaceName='WS_Steve'))
-    # print(fabric_rest().workspace_get_access_details_user(userName='sp_bam', workspaceName='WS_Steve'))
-    print(fabric_rest().workspace_get_access_details_user(userName='sp_bam'))
-
-
-    ## Users
-    ## This does not work yet
-    # print(fabric_rest().user_get_access_entities(userName='a4afe56e-0589-4c74-81b1-f9928ad84d30'))
-
-
-    # print(fabric_rest().lakehouse_create_shortcut_adls(workspaceName='WS_Steve', itemName='', shortcutName='', shortcutPath='', adlsPath='', adlsSubPath=''))
-    
-    # print(fabric_rest().lakehouse_get_id(workspaceName='WS_Steve', lakehouseName='LH_InternetSales'))
-    # print(fabric_rest().lakehouse_get_object(workspaceName='WS_Steve', lakehouseName='LH_InternetSales'))
-    # print(fabric_rest().lakehouse_get_definition_response(workspaceName='WS_Steve', lakehouseName='LH_InternetSales'))
-    # print(fabric_rest().lakehouse_get_definition_parts(workspaceName='WS_Steve', lakehouseName='LH_InternetSales'))
-    # print(fabric_rest().lakehouse_create(workspaceName='WS_Steve', lakehouseName='LH_Test2'))
-    # print(fabric_rest().lakehouse_delete(workspaceName='WS_Steve', lakehouseName='LH_Test2'))
-    
-    # workspaceId = '372dfc2d-e201-49d7-a28b-7cfc015a9317'
-    # itemId = 'b5dc0a83-ed62-463f-a9e3-79faba442a6c'
-    # response = requests.delete(url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}', headers=fabric_rest().header)
-    # print(response.status_code)
-    # print(response.json())
-    # print(response.headers)
-    
-    
-    ## Pipelines
-    # print(fabric_rest().pipeline_get_definition_parts(workspaceName='WS_Steve', pipelineName='PL_Simple'))
-    # print(fabric_rest().pipeline_clone(workspaceNameSource='WS_Steve', pipelineNameSource='PL_Simple', workspaceNameTarget='WS_Steve', pipelineNameTarget='PL_Simple5'))
-    
 
 
