@@ -53,6 +53,22 @@ class fabric_rest():
                 return responseResult
 
 
+    ## Unoffical API
+    def capacity_list_response(self) -> requests.Response:
+        response = self.request(method='get', url='https://wabi-west-us3-a-primary-redirect.analysis.windows.net/capacities/listbyrollouts')
+        return response
+    
+
+    def capacity_list(self) -> list:
+        capacityList = self.capacity_list_response().json().get('capacitiesMetadata')
+        return capacityList
+    
+
+    def capacity_get(self, capacityName:str) -> dict:
+        capacity = [capacity for capacity in self.capacity_list() if capacity.get('configuration').get('displayName') == capacityName][0]
+        return capacity
+    
+
     def workspace_list_response(self) -> requests.Response:
         logger.info('workspace_list_response')
         response = self.request(method='get', url='https://api.fabric.microsoft.com/v1/workspaces')
@@ -127,6 +143,45 @@ class fabric_rest():
         pipelineResponse = self.item_get_response(workspaceName=workspaceName, itemType='DataPipeline')
         return pipelineResponse
     
+
+    def pipeline_list(self, workspaceName:str) -> list:
+        pipelineList = self.pipeline_list_response(workspaceName=workspaceName).json().get('value')
+        return pipelineList
+    
+
+    def pipeline_create(self, workspaceName:str, pipelineName:str, pipelinePartsList:str) -> requests.Response:
+        body = {"displayName": pipelineName
+                ,"type": "DataPipeline"
+                ,"definition": {
+                    "parts": pipelinePartsList
+                    }
+                }
+        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
+        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items', body=body)
+        return response
+    
+
+    def pipeline_update_metadata(self, workspaceName:str, pipelineName:str, displayName:str='', description:str='') -> str:
+        body = {k:v for k,v in {'displayName':displayName, 'description': description}.items() if v != ''}
+        response = self.item_update_metadata(workspaceName=workspaceName, itemName=pipelineName, body=body)
+        return response
+    
+
+    ## TODO -WIP
+    def pipeline_update_definition(self, workspaceName:str, pipelineName:str, payloadBase64:str) -> str:
+        body = {"definition": { 
+                    "parts": [ 
+                    { 
+                        "path": "pipeline-content.json", 
+                        "payload": payloadBase64, 
+                        "payloadType": "InlineBase64" 
+                    } 
+                    ] 
+                } 
+            }
+        response = self.item_update_definition(workspaceName=workspaceName, itemName=pipelineName, definition=body)
+        return response
+
 
     def pipeline_get_object(self, workspaceName:str, pipelineName:str) -> str:
         lakehouseId = self.item_get_object(workspaceName=workspaceName, itemName=pipelineName, itemType='DataPipeline')
@@ -251,6 +306,21 @@ class fabric_rest():
         # logger.info(f'item_delete - {workspaceName=}:{workspaceId=} - {itemName=}:{itemId}')
         url = f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}'
         response = self.request(method='delete', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}')
+        return response
+
+
+    def item_update_metadata(self, workspaceName:str, itemName:str, body:dict) -> str:
+        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
+        itemId = self.item_get_id(workspaceName=workspaceName, itemName=itemName)
+        response = self.request(method='patch', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}', body=body)
+        return response
+    
+
+    ## TODO WIP
+    def item_update_definition(self, workspaceName:str, itemName:str, definition:dict) -> str:
+        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
+        itemId = self.item_get_id(workspaceName=workspaceName, itemName=itemName)
+        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/updateDefinition', body=definition)
         return response
 
 

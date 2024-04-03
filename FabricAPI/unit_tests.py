@@ -50,13 +50,27 @@ if __name__ == '__main__':
     
     
     ## Pipelines
-    print(fabric_rest().pipeline_get_definition_parts(workspaceName='WS_Steve', pipelineName='PL_Simple'))
+    # print(fabric_rest().pipeline_list_response(workspaceName='WS_Steve'))
+    # print(fabric_rest().pipeline_list(workspaceName='WS_Steve'))
+    # print(fabric_rest().pipeline_create(workspaceName='WS_Steve', pipelineName='PL_Simple_from_API'))
+
+    # print(fabric_rest().pipeline_get_definition_parts(workspaceName='WS_Steve', pipelineName='PL_Simple'))
     # print(fabric_rest().pipeline_clone(workspaceNameSource='WS_Steve', pipelineNameSource='PL_Simple', workspaceNameTarget='WS_Steve', pipelineNameTarget='PL_Simple5'))
-    
+    print(fabric_rest().pipeline_update_metadata(workspaceName='WS_Steve', pipelineName='PL_Simple_Updated', displayName="PL_Simple", description=""))
 
     ## Notebooks
     # print(fabric_rest().notebook_get_item_definition(workspaceName='WS_Steve', notebookName='NB_Simple'))
     # print(fabric_rest().notebook_delete(workspaceName='WS_Steve', notebookName='Notebook 3'))
+
+
+    ## Capacities - Unoffical APIs
+    # print(fabric_rest().capacity_list_response())
+    # print(fabric_rest().capacity_list())
+    # print(fabric_rest().capacity_get(capacityName='fabricbamdemo'))
+    
+
+    ## Extensions
+    # print(fabric_rest().download_workspace_items(workspaceName="", outputFolderPath=""))
 
 
     # workspaceId = '372dfc2d-e201-49d7-a28b-7cfc015a9317'
