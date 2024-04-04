@@ -45,7 +45,11 @@ if __name__ == '__main__':
     # print(fabric_rest().lakehouse_get_definition_parts(workspaceName='WS_Steve', lakehouseName='LH_InternetSales'))
     # print(fabric_rest().lakehouse_create(workspaceName='WS_Steve', lakehouseName='LH_Test2'))
     # print(fabric_rest().lakehouse_delete(workspaceName='WS_Steve', lakehouseName='LH_Test2'))
-    
+    # print(fabric_rest().lakehouse_get_properties(workspaceName='WS_Steve', lakehouseName='LH_InternetSales'))
+    # Is not supported yet
+    # print(fabric_rest().lakehouse_update(workspaceName='WS_Steve', lakehouseName='LH_Test2', lakehouseNameNew='LH_Test3', lakehouseDescription='test description'))
+
+
     ## TODO - Shortcut creation has some complexitites to it. 
     ## Need to think through various scenarios to see what makes sense in the short term and long term.
     # print(fabric_rest().lakehouse_create_shortcut_adls(workspaceName='WS_Steve', itemName='', shortcutName='', shortcutPath='', adlsPath='', adlsSubPath=''))
@@ -63,7 +67,7 @@ if __name__ == '__main__':
     # print(fabric_rest().pipeline_get_definition_parts(workspaceName='WS_Steve', pipelineName='PL_Simple'))
     # print(fabric_rest().pipeline_clone(workspaceNameSource='WS_Steve', pipelineNameSource='PL_Simple5_API_Created2', workspaceNameTarget='WS_Steve', pipelineNameTarget='PL_Simple5_API_Created5'))
     # print(fabric_rest().pipeline_update_metadata(workspaceName='WS_Steve', pipelineName='PL_Simple_Updated', displayName="PL_Simple", description=""))
-    print(fabric_rest().pipeline_delete(workspaceName='WS_Steve', pipelineName='PL_Simple5_API_Created'))
+    # print(fabric_rest().pipeline_delete(workspaceName='WS_Steve', pipelineName='PL_Simple5_API_Created'))
 
 
     ## Notebooks

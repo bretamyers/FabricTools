@@ -419,7 +419,28 @@ class fabric_rest():
         response = self.item_delete(workspaceName=workspaceName, itemName=lakehouseName)
         return response
 
+    
+    # https://learn.microsoft.com/en-us/fabric/data-engineering/lakehouse-api#get-lakehouse-properties
+    def lakehouse_get_properties_response(self, workspaceName:str, lakehouseName:str) -> dict:
+        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
+        lakehouseId = self.lakehouse_get_id(workspaceName=workspaceName, lakehouseName=lakehouseName)
+        lakehouseProperties = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/lakehouses/{lakehouseId}')
+        return lakehouseProperties
 
 
+    def lakehouse_get_properties(self, workspaceName:str, lakehouseName:str) -> dict:
+        lakehouseProperties = self.lakehouse_get_properties_response(workspaceName=workspaceName, lakehouseName=lakehouseName).json()
+        return lakehouseProperties
+    
+
+    ## Is not supported yet
+    # https://learn.microsoft.com/en-us/fabric/data-engineering/lakehouse-api#update-a-lakehouse
+    def lakehouse_update(self, workspaceName:str, lakehouseName:str, lakehouseNameNew:str=None, lakehouseDescription:str=None) -> str:
+        body = {**({"displayName": lakehouseNameNew} if lakehouseNameNew is not None else {})
+                ,**({"description": lakehouseDescription} if lakehouseDescription is not None else {})
+            }
+        response = self.item_update_metadata(workspaceName=workspaceName, itemName=lakehouseName, body=body)
+        return response
+    
 
 
