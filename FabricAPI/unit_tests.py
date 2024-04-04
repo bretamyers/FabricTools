@@ -8,6 +8,80 @@ from faburest import fabric_rest
 
 logger = logging.getLogger(__name__)
 
+
+def unit_test_workspace():
+    fr = fabric_rest()
+    fr.workspace_create(workspaceName='WS_Steve')
+    # create workspace
+    # check workspace exists (list workspace)
+    # rename workspace
+    # check workspace exists (list workspace)
+    # update workspace
+    # check workspace updated
+    pass
+
+
+def unit_test_pipeline():
+    # create pipeline
+    # check pipeline exists (list pipeline)
+    # rename pipeline
+    # check pipeline exists (list pipeline)
+    # update pipeline
+    # check pipeline updated
+    # clone pipeline
+    # check pipeline exists (list pipeline)
+    # delete pipeline clone
+    # check pipeline is deleted (list pipeline)
+    # run pipeline
+    # check pipeline run status
+    # cancel pipeline run
+    pass
+
+
+def unit_test_notebook():
+    # create notebook
+    # check notebook exists (list notebook)
+    # rename notebook
+    # check notebook exists (list notebook)
+    # update notebook
+    # check notebook updated
+    # delete notebook
+    # check notebook is deleted (list notebook)
+    # run notebook
+    # check notebook run status
+    # cancel notebook run
+    pass
+
+
+def unit_test_lakehouse():
+    # create lakehouse
+    # check lakehouse exists (list lakehouse)
+    # rename lakehouse
+    # check lakehouse exists (list lakehouse)
+    # update lakehouse
+    # check lakehouse updated
+    # delete lakehouse
+    # check lakehouse is deleted (list lakehouse)
+    # create lakehouse shortcut
+    # check lakehouse shortcut exists (list lakehouse)
+    pass
+
+
+def unit_test_scale():
+    # create 100 workspaces
+    # create 100 pipelines in each workspace
+    # list all items
+    # delete all items
+    # delete all workspaces
+    pass
+
+
+# TODO - needs some additional work as we need to get the user id from entra
+def unit_test_users():
+    pass
+
+
+
 if __name__ == '__main__':
     
     # https://stackoverflow.com/questions/7016056/python-logging-not-outputting-anything
@@ -21,7 +95,13 @@ if __name__ == '__main__':
 
     # format='ipynb'
 
+    # print(fabric_rest().capacity_list())
+    print(fabric_rest().principal_list(prefix='brmyers@bamsql.com'))
+    print(fabric_rest().principal_get_id(principalName='brmyers@bamsql.com'))
+
     ## Workspaces
+    # print(fabric_rest().workspace_create(workspaceName='WS_API_Created_2', capacityName='fabricbamdemo'))
+    # print(fabric_rest().workspace_delete(workspaceName='WS_API_Created'))
     # print(fabric_rest().workspace_list_response())
     # print(fabric_rest().workspace_list())
     # print(fabric_rest().workspace_get_id(workspaceName='WS_Steve'))
@@ -31,7 +111,7 @@ if __name__ == '__main__':
     # print(json.dumps(fabric_rest().workspace_get_access_details_user(userName='sp_bam'), indent=4))
     # print(json.dumps(fabric_rest().workspace_get_access_details_user(userName='admin MCAPS'), indent=4))
     # print(json.dumps(fabric_rest().workspace_get_access_details_user(userName='Shane Ochotny'), indent=4))
-    
+    print(fabric_rest().workspace_add_role_assignment(workspaceName='WS_API_Code', principalName='brmyers@bamsql.com', role='Contributor'))
 
 
     ## Users
@@ -62,9 +142,14 @@ if __name__ == '__main__':
     # print(fabric_rest().pipeline_get_definition(workspaceName='WS_Steve', pipelineName='PL_Simple_Updated'))
     # # Create Pipeline
     # myPipelineDefinition = fabric_rest().pipeline_get_definition(workspaceName='WS_Steve', pipelineName='PL_Simple5')
-    # # print(myPipelineDefinition)
+    # print(myPipelineDefinition)
     # print(fabric_rest().pipeline_create(workspaceName='WS_Steve', pipelineName='PL_Simple5_API_Created2', pipelineDefinition=myPipelineDefinition))
 
+    # import _util
+    # myPipelineDefinition = fabric_rest().pipeline_get_definition(workspaceName='WS_Steve', pipelineName='PL_Simple5')
+    # print(_util._base64_decode(myPipelineDefinition['definition']['parts'][0]['payload']))
+    
+    
     # print(fabric_rest().pipeline_get_definition_parts(workspaceName='WS_Steve', pipelineName='PL_Simple'))
     # print(fabric_rest().pipeline_clone(workspaceNameSource='WS_Steve', pipelineNameSource='PL_Simple5_API_Created2', workspaceNameTarget='WS_Steve', pipelineNameTarget='PL_Simple5_API_Created5'))
     # print(fabric_rest().pipeline_update_metadata(workspaceName='WS_Steve', pipelineName='PL_Simple_Updated', displayName="PL_Simple", description=""))

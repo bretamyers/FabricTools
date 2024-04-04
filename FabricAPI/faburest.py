@@ -53,20 +53,42 @@ class fabric_rest():
                 return responseResult
 
 
-    ## Unoffical API
+    ## PBI API
+    # https://learn.microsoft.com/en-us/rest/api/power-bi/capacities/get-capacities
     def capacity_list_response(self) -> requests.Response:
-        response = self.request(method='get', url='https://wabi-west-us3-a-primary-redirect.analysis.windows.net/capacities/listbyrollouts')
+        # response = self.request(method='get', url='https://wabi-west-us3-a-primary-redirect.analysis.windows.net/capacities/listbyrollouts')
+        response = self.request(method='get', url='https://api.powerbi.com/v1.0/myorg/capacities')
         return response
     
 
     def capacity_list(self) -> list:
-        capacityList = self.capacity_list_response().json().get('capacitiesMetadata')
+        # capacityList = self.capacity_list_response().json().get('capacitiesMetadata')
+        capacityList = self.capacity_list_response().json().get('value')
         return capacityList
     
 
     def capacity_get(self, capacityName:str) -> dict:
-        capacity = [capacity for capacity in self.capacity_list() if capacity.get('configuration').get('displayName') == capacityName][0]
+        # capacity = [capacity for capacity in self.capacity_list() if capacity.get('configuration').get('displayName') == capacityName][0]
+        capacity = [capacity for capacity in self.capacity_list() if capacity.get('displayName') == capacityName][0]
         return capacity
+    
+
+    ## Unoffice API to list users
+    # Should change to an entra API in the future   
+    def principal_list_response(self, prefix:str) -> requests.Response:
+        # response = self.request(method='get', url='https://wabi-west-us3-a-primary-redirect.analysis.windows.net/metadata/people?prefix=shane&type=3&limit=10&includeB2BUsers=true&relevantUsersFirst=true&includeRelevantGroups=false')
+        response = self.request(method='get', url=f'https://wabi-west-us3-a-primary-redirect.analysis.windows.net/metadata/people?prefix={prefix}')
+        return response
+    
+
+    def principal_list(self, prefix:str) -> requests.Response:
+        response = self.principal_list_response(prefix).json()
+        return response
+    
+
+    def principal_get_id(self, principalName:str) -> str:
+        principalId = [principal.get('objectId') for principal in self.principal_list(prefix=principalName) if principal.get('userPrincipalName') == principalName][0]
+        return principalId
     
 
     def workspace_list_response(self) -> requests.Response:
@@ -80,6 +102,54 @@ class fabric_rest():
         workspaceList = self.workspace_list_response().json().get('value')
         return workspaceList
 
+
+    def workspace_create_response(self, workspaceName:str, capacityName:str, description:str=None) -> requests.Response:
+        capacityId = self.capacity_get(capacityName=capacityName).get('id')
+        body = {
+            "displayName": workspaceName
+            ,"capacityId": capacityId
+            ,**({"description": description} if description is not None else {})
+        }
+        response = self.request(method='post', url='https://api.fabric.microsoft.com/v1/workspaces', body=body)
+        return response
+
+
+    def workspace_create(self, workspaceName:str, capacityName:str, description:str=None) -> dict:
+        response = self.workspace_create_response(workspaceName=workspaceName, capacityName=capacityName, description=description)
+        return response.json()
+    
+
+    def workspace_delete(self, workspaceName:str) -> requests.Response:
+        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
+        response = self.request(method='delete', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}')
+        return response
+    
+
+    def workspace_assign_capacity(self, workspaceName:str, capacityName:str) -> requests.Response:
+        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
+        capacityId = self.capacity_get(capacityName=capacityName).get('id')
+        body = {"capacityId": capacityId}
+        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/assignToCapacity', body=body)
+        return response
+    
+
+    # https://learn.microsoft.com/en-us/rest/api/fabric/core/workspaces/add-workspace-role-assignment?tabs=HTTP
+    # role = ['Admin', 'Contributor', 'Member', 'Viewer']
+    def workspace_add_role_assignment(self, workspaceName:str, principalName:str, role:str) -> requests.Response:
+        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
+        principal = {'id': self.principal_get_id(principalName=principalName), "type": "User"}
+        body = {'principal': principal, 'role': role}
+        print(body)
+        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/roleAssignments', body=body)
+        return response
+    
+    
+    def workspace_delete_role_assignment(self, workspaceName:str, principalName:str) -> requests.Response:
+        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
+        principalId = '' # principalName ## need to query entra to get principal id
+        response = self.request(method='delete', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/roleAssignments/{principalId}')
+        return response
+    
 
     # https://learn.microsoft.com/en-us/rest/api/fabric/admin/workspaces/list-workspaces?tabs=HTTP
     def workspace_get_id(self, workspaceName:str) -> str:
