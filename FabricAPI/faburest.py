@@ -324,7 +324,7 @@ class fabric_rest():
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
         itemId = self.item_get_id(workspaceName=workspaceName, itemName=itemName)
         #response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/jobs/instances{f'?jobType={jobType}' if jobType else ''}')
-        # exception because in preview, the job instance id is found in the response header and not body.
+        # exception because in preview, the job instance id is found in the response header and not body so we have to use requests directly.
         response = requests.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/jobs/instances{f'?jobType={jobType}' if jobType else ''}', headers=self.header)
         return response.headers.get('Location').split('jobs/instances/')[-1]
     
