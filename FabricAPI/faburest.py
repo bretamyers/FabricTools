@@ -291,7 +291,7 @@ class fabric_rest():
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
         body = {"displayName": itemName
                 ,"type": itemType
-                ,**({ 'itemDefinition': itemDefinition } if itemDefinition is not None else {})
+                ,**({'itemDefinition': itemDefinition } if itemDefinition is not None else {})
                 }
         # logger.info(f'item_create - {body=}')
         response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items', body=body)
