@@ -149,7 +149,7 @@ class fabric_rest():
         return pipelineList
     
 
-    def pipeline_create(self, workspaceName:str, pipelineName:str, pipelineDefinition:str) -> requests.Response:
+    def pipeline_create(self, workspaceName:str, pipelineName:str, pipelineDefinition:dict) -> requests.Response:
         response = self.item_create(workspaceName=workspaceName, itemName=pipelineName, itemType='DataPipeline', itemDefinition=pipelineDefinition)
         return response
     
@@ -159,27 +159,32 @@ class fabric_rest():
         return response
     
 
-    def pipeline_update_metadata(self, workspaceName:str, pipelineName:str, displayName:str='', description:str='') -> str:
-        body = {k:v for k,v in {'displayName':displayName, 'description': description}.items() if v != ''}
+    def pipeline_update_metadata(self, workspaceName:str, pipelineName:str, pipelineNameNew:str=None, pipelineDescription:str=None) -> str:
+        body = {k:v for k,v in {'displayName':pipelineNameNew, 'description': pipelineDescription}.items() if v != ''}
         response = self.item_update_metadata(workspaceName=workspaceName, itemName=pipelineName, body=body)
         return response
     
 
-    ## TODO -WIP
-    def pipeline_update_definition(self, workspaceName:str, pipelineName:str, payloadBase64:str) -> str:
-        body = {"definition": { 
-                    "parts": [ 
-                    { 
-                        "path": "pipeline-content.json", 
-                        "payload": payloadBase64, 
-                        "payloadType": "InlineBase64" 
-                    } 
-                    ] 
-                } 
-            }
-        response = self.item_update_definition(workspaceName=workspaceName, itemName=pipelineName, definition=body)
+    def pipeline_update_definition(self, workspaceName:str, pipelineName:str, pipelineDefinition:dict) -> str:
+        # https://learn.microsoft.com/en-us/fabric/data-factory/pipeline-rest-api#update-item-definition
+        response = self.item_update_definition(workspaceName=workspaceName, itemName=pipelineName, definition=pipelineDefinition)
         return response
 
+
+    def pipeline_run(self, workspaceName:str, pipelineName:str) -> requests.Response:
+        response = self.item_run_job(workspaceName=workspaceName, itemName=pipelineName, jobType='Pipeline')
+        return response
+    
+
+    def pipeline_get_run_instance(self, workspaceName:str, pipelineName:str, jobInstanceId:str) -> requests.Response:
+        response = self.item_get_job_instance(workspaceName=workspaceName, itemName=pipelineName, jobInstanceId=jobInstanceId)
+        return response
+
+
+    def pipeline_cancel_run_instance(self, workspaceName:str, pipelineName:str, jobInstanceId:str) -> requests.Response:
+        response = self.item_cancel_job_instance(workspaceName=workspaceName, itemName=pipelineName, jobInstanceId=jobInstanceId)
+        return response
+    
 
     def pipeline_get_object(self, workspaceName:str, pipelineName:str) -> str:
         lakehouseId = self.item_get_object(workspaceName=workspaceName, itemName=pipelineName, itemType='DataPipeline')
@@ -312,6 +317,37 @@ class fabric_rest():
         return response
 
 
+    #
+    #   jobType = ['Pipeline']
+    #
+    def item_run_job(self, workspaceName:str, itemName:str, jobType:str) -> requests.Response:
+        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
+        itemId = self.item_get_id(workspaceName=workspaceName, itemName=itemName)
+        #response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/jobs/instances{f'?jobType={jobType}' if jobType else ''}')
+        # exception because in preview, the job instance id is found in the response header and not body.
+        response = requests.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/jobs/instances{f'?jobType={jobType}' if jobType else ''}', headers=self.header)
+        return response.headers.get('Location').split('jobs/instances/')[-1]
+    
+
+    def item_get_job_instance_response(self, workspaceName:str, itemName:str, jobInstanceId:str) -> requests.Response:
+        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
+        itemId = self.item_get_id(workspaceName=workspaceName, itemName=itemName)
+        response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/jobs/instances/{jobInstanceId}')
+        return response
+    
+    
+    def item_get_job_instance(self, workspaceName:str, itemName:str, jobInstanceId:str) -> dict:
+        response = self.item_get_job_instance_response(workspaceName=workspaceName, itemName=itemName, jobInstanceId=jobInstanceId).json()
+        return response
+    
+    
+    def item_cancel_job_instance(self, workspaceName:str, itemName:str, jobInstanceId:str) -> requests.Response:
+        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
+        itemId = self.item_get_id(workspaceName=workspaceName, itemName=itemName)
+        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/jobs/instances/{jobInstanceId}/cancel')
+        return response
+
+
     def lakehouse_get_shortcut(self, workspaceName:str, itemName:str, shortcutPath:str, shortcutName:str) -> requests.Response:
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
         itemId = self.artifact_get_id(workspaceName=workspaceName, artifactName=itemName)
@@ -363,6 +399,7 @@ class fabric_rest():
             }
         response = self._lakehouse_create_shortcut(workspaceId=workspaceId, itemId=itemId, body=body)
         return response
+
 
     def connections_response(self, connectionName:str) -> requests.Response:
         response = self.request(method='get', url='https://api.powerbi.com/v2.0/myorg/me/gatewayClusterDatasources') #?$expand=users
@@ -453,5 +490,7 @@ class fabric_rest():
     def lakehouse_get_tables(self, workspaceName:str, lakehouseName:str) -> list:
         lakehouseTableList = self.lakehouse_get_tables_response(workspaceName=workspaceName, lakehouseName=lakehouseName).json().get('data')
         return lakehouseTableList
+
+
 
 

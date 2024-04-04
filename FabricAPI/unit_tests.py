@@ -1,4 +1,5 @@
 import logging
+import time
 # from FabricAPI import faburest
 # import sys, os
 # SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -48,7 +49,7 @@ if __name__ == '__main__':
     # print(fabric_rest().lakehouse_get_properties(workspaceName='WS_Steve', lakehouseName='LH_InternetSales'))
     # Is not supported yet
     # print(fabric_rest().lakehouse_update(workspaceName='WS_Steve', lakehouseName='LH_Test2', lakehouseNameNew='LH_Test3', lakehouseDescription='test description'))
-    print(fabric_rest().lakehouse_get_tables(workspaceName='WS_Steve', lakehouseName='LH_InternetSales'))
+    # print(fabric_rest().lakehouse_get_tables(workspaceName='WS_Steve', lakehouseName='LH_InternetSales'))
 
     ## TODO - Shortcut creation has some complexitites to it. 
     ## Need to think through various scenarios to see what makes sense in the short term and long term.
@@ -68,6 +69,19 @@ if __name__ == '__main__':
     # print(fabric_rest().pipeline_clone(workspaceNameSource='WS_Steve', pipelineNameSource='PL_Simple5_API_Created2', workspaceNameTarget='WS_Steve', pipelineNameTarget='PL_Simple5_API_Created5'))
     # print(fabric_rest().pipeline_update_metadata(workspaceName='WS_Steve', pipelineName='PL_Simple_Updated', displayName="PL_Simple", description=""))
     # print(fabric_rest().pipeline_delete(workspaceName='WS_Steve', pipelineName='PL_Simple5_API_Created'))
+    # print(fabric_rest().pipeline_run(workspaceName='WS_Steve', pipelineName='PL_Simple5'))
+    # pipelineRunId = fabric_rest().pipeline_run(workspaceName='WS_Steve', pipelineName='PL_Simple5')
+    # print(fabric_rest().pipeline_get_run_instance(workspaceName='WS_Steve', pipelineName='PL_Simple5', jobInstanceId='b40bb47f-e9ae-4ae9-936a-a110d0d971bc')) #pipelineRunId))
+    # pipelineRunId = fabric_rest().pipeline_run(workspaceName='WS_Steve', pipelineName='PL_Simple5')
+    # while True:
+    #     time.sleep(5)
+    #     pipelineRunStatus = fabric_rest().pipeline_get_run_instance(workspaceName='WS_Steve', pipelineName='PL_Simple5', jobInstanceId=pipelineRunId)
+    #     print(pipelineRunStatus)
+    #     # if pipelineRunStatus['status'] == 'Completed':
+    #     if pipelineRunStatus['status'] == 'InProgress':
+    #         break
+    # # time.sleep(30)
+    # print(fabric_rest().pipeline_cancel_run_instance(workspaceName='WS_Steve', pipelineName='PL_Simple5', jobInstanceId=pipelineRunId))
 
 
     ## Notebooks
