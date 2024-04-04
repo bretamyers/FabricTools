@@ -149,15 +149,13 @@ class fabric_rest():
         return pipelineList
     
 
-    def pipeline_create(self, workspaceName:str, pipelineName:str, pipelinePartsList:str) -> requests.Response:
-        body = {"displayName": pipelineName
-                ,"type": "DataPipeline"
-                ,"definition": {
-                    "parts": pipelinePartsList
-                    }
-                }
-        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
-        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items', body=body)
+    def pipeline_create(self, workspaceName:str, pipelineName:str, pipelineDefinition:str) -> requests.Response:
+        response = self.item_create(workspaceName=workspaceName, itemName=pipelineName, itemType='DataPipeline', itemDefinition=pipelineDefinition)
+        return response
+    
+    
+    def pipeline_delete(self, workspaceName:str, pipelineName:str) -> requests.Response:
+        response = self.item_delete(workspaceName=workspaceName, itemName=pipelineName)
         return response
     
 
@@ -195,6 +193,11 @@ class fabric_rest():
 
 
     # https://learn.microsoft.com/en-us/rest/api/fabric/core/items/get-item-definition?tabs=HTTP
+    def pipeline_get_definition(self, workspaceName:str, pipelineName:str) -> list:
+        itemDefinition = self.item_get_definition(workspaceName=workspaceName, itemName=pipelineName, itemType='DataPipeline')
+        return itemDefinition
+    
+
     def pipeline_get_definition_parts(self, workspaceName:str, pipelineName:str) -> list:
         itemDefinitionParts = self.item_get_definition_parts(workspaceName=workspaceName, itemName=pipelineName, itemType='DataPipeline')
         return itemDefinitionParts
@@ -202,44 +205,25 @@ class fabric_rest():
 
     # https://learn.microsoft.com/en-us/rest/api/fabric/core/items/create-item?tabs=HTTP
     def pipeline_clone(self, workspaceNameSource:str, pipelineNameSource:str, workspaceNameTarget:str, pipelineNameTarget:str) -> requests.Response:
-        pipelinePartsList = self.pipeline_get_definition_parts(workspaceName=workspaceNameSource, pipelineName=pipelineNameSource)
-        body = {"displayName": pipelineNameTarget
-                ,"type": "DataPipeline"
-                ,"definition": {
-                    "parts": pipelinePartsList
-                    }
-                }
-
-        workspaceId = self.workspace_get_id(workspaceName=workspaceNameTarget)
-        
-        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items', body=body)
+        pipelineDefinition = self.pipeline_get_definition(workspaceName=workspaceNameSource, pipelineName=pipelineNameSource)
+        response = self.item_create(workspaceName=workspaceNameTarget, itemName=pipelineNameTarget, itemType='DataPipeline', itemDefinition=pipelineDefinition)
         return response
+
 
     # https://learn.microsoft.com/en-us/rest/api/fabric/admin/items/list-items?tabs=HTTP
     def notebook_get_id(self, workspaceName:str, notebookName:str) -> str:
-        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
-        response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items?type=Notebook')
-        notebookId = [notebook.get('id') for notebook in response.json().get('value') if notebook.get('displayName') == notebookName][0]
+        notebookId = self.item_get_id(workspaceName=workspaceName, itemName=notebookName, itemType='Notebook')
         return notebookId
 
 
     def notebook_get_item_definition(self, workspaceName:str, notebookName:str) -> requests.Response:
-        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
-        notebookId = self.notebook_get_id(workspaceName=workspaceName, notebookName=notebookName)
-        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{notebookId}/getDefinition?format=ipynb')
-        definition = response.json().get('definition')
+        definition = self.item_get_definition(workspaceName=workspaceName, itemName=notebookName, itemType='Notebook', format='ipynb')
         return definition
 
 
     def notebook_clone(self, workspaceNameSource:str, notebookNameSource:str, workspaceNameTarget:str, notebookNameTarget:str) -> requests.Response:
-        notebook_get_definition = self.notebook_get_item_definition(workspaceName=workspaceNameSource, notebookName=notebookNameSource).get('definition')
-        body = {
-            "displayName": notebookNameTarget
-            ,"type": "Notebook"
-            ,"definition": notebook_get_definition
-        }
-        workspaceIdTarget = self.workspace_get_id(workspaceName=workspaceNameTarget)
-        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceIdTarget}/items', body=body)
+        notebook_get_definition = self.notebook_get_item_definition(workspaceName=workspaceNameSource, notebookName=notebookNameSource)
+        response = self.item_create(workspaceName=workspaceNameTarget, itemName=notebookNameTarget, itemType='Notebook', itemDefinition=notebook_get_definition)
         return response
     
 
@@ -274,16 +258,21 @@ class fabric_rest():
         return artifactId
 
 
-    def item_get_definition_response(self, workspaceName:str, itemName:str, itemType:str='') -> requests.Response:
+    def item_get_definition_response(self, workspaceName:str, itemName:str, itemType:str='', format=None) -> requests.Response:
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
         itemId = self.item_get_id(workspaceName=workspaceName, itemName=itemName, itemType=itemType)
         # logger.info(f'item_get_definition_response {workspaceName=}:{workspaceId=} - {itemName=}:{itemId}')
-        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/getDefinition')
+        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/getDefinition{f'?format={format}' if format else ''}')
         return response
     
 
-    def item_get_definition_parts(self, workspaceName:str, itemName:str, itemType:str='') -> requests.Response:
-        response = self.item_get_definition_response(workspaceName=workspaceName, itemName=itemName, itemType=itemType).json().get('definition').get('parts')
+    def item_get_definition(self, workspaceName:str, itemName:str, itemType:str='', format=None) -> dict:
+        response = self.item_get_definition_response(workspaceName=workspaceName, itemName=itemName, itemType=itemType).json()
+        return response
+    
+
+    def item_get_definition_parts(self, workspaceName:str, itemName:str, itemType:str='', format=None) -> list:
+        response = self.item_get_definition(workspaceName=workspaceName, itemName=itemName, itemType=itemType, format=format).get('definition').get('parts')
         return response
 
 
@@ -291,16 +280,15 @@ class fabric_rest():
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
         body = {"displayName": itemName
                 ,"type": itemType
-                ,**({'itemDefinition': itemDefinition } if itemDefinition is not None else {})
+                ,**(itemDefinition if itemDefinition is not None else {})
+                # ,**({'definition': itemDefinition.get('definition')} if itemDefinition is not None else {}) ## This can be None when creating a Lakehouse
                 }
-        # logger.info(f'item_create - {body=}')
         response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items', body=body)
         return response
     
 
     # This one does not work yet!! (for lakehouse)
     def item_delete(self, workspaceName:str, itemName:str):
-        # https://wabi-west-us3-a-primary-redirect.analysis.windows.net/metadata/artifacts/0106bc1e-ab38-4a85-9569-7b9100799147
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
         itemId = self.item_get_id(workspaceName=workspaceName, itemName=itemName)
         # logger.info(f'item_delete - {workspaceName=}:{workspaceId=} - {itemName=}:{itemId}')

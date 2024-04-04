@@ -16,7 +16,9 @@ if __name__ == '__main__':
 
     ## Items
     # print(fabric_rest().item_list(workspaceName='WS_Steve'))
+    # print(fabric_rest().item_get_definition(workspaceName='WS_Steve', itemName='NB_API_ClonePipeline', itemType='DataPipeline'))
 
+    # format='ipynb'
 
     ## Workspaces
     # print(fabric_rest().workspace_list_response())
@@ -52,11 +54,17 @@ if __name__ == '__main__':
     ## Pipelines
     # print(fabric_rest().pipeline_list_response(workspaceName='WS_Steve'))
     # print(fabric_rest().pipeline_list(workspaceName='WS_Steve'))
-    # print(fabric_rest().pipeline_create(workspaceName='WS_Steve', pipelineName='PL_Simple_from_API'))
+    # print(fabric_rest().pipeline_get_definition(workspaceName='WS_Steve', pipelineName='PL_Simple_Updated'))
+    # # Create Pipeline
+    # myPipelineDefinition = fabric_rest().pipeline_get_definition(workspaceName='WS_Steve', pipelineName='PL_Simple5')
+    # # print(myPipelineDefinition)
+    # print(fabric_rest().pipeline_create(workspaceName='WS_Steve', pipelineName='PL_Simple5_API_Created2', pipelineDefinition=myPipelineDefinition))
 
     # print(fabric_rest().pipeline_get_definition_parts(workspaceName='WS_Steve', pipelineName='PL_Simple'))
-    # print(fabric_rest().pipeline_clone(workspaceNameSource='WS_Steve', pipelineNameSource='PL_Simple', workspaceNameTarget='WS_Steve', pipelineNameTarget='PL_Simple5'))
-    print(fabric_rest().pipeline_update_metadata(workspaceName='WS_Steve', pipelineName='PL_Simple_Updated', displayName="PL_Simple", description=""))
+    # print(fabric_rest().pipeline_clone(workspaceNameSource='WS_Steve', pipelineNameSource='PL_Simple5_API_Created2', workspaceNameTarget='WS_Steve', pipelineNameTarget='PL_Simple5_API_Created5'))
+    # print(fabric_rest().pipeline_update_metadata(workspaceName='WS_Steve', pipelineName='PL_Simple_Updated', displayName="PL_Simple", description=""))
+    print(fabric_rest().pipeline_delete(workspaceName='WS_Steve', pipelineName='PL_Simple5_API_Created'))
+
 
     ## Notebooks
     # print(fabric_rest().notebook_get_item_definition(workspaceName='WS_Steve', notebookName='NB_Simple'))
