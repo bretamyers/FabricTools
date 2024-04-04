@@ -443,4 +443,15 @@ class fabric_rest():
         return response
     
 
+    def lakehouse_get_tables_response(self, workspaceName:str, lakehouseName:str) -> requests.Response:
+        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
+        lakehouseId = self.lakehouse_get_id(workspaceName=workspaceName, lakehouseName=lakehouseName)
+        response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/lakehouses/{lakehouseId}/tables')
+        return response
+
+
+    def lakehouse_get_tables(self, workspaceName:str, lakehouseName:str) -> list:
+        lakehouseTableList = self.lakehouse_get_tables_response(workspaceName=workspaceName, lakehouseName=lakehouseName).json().get('data')
+        return lakehouseTableList
+
 

@@ -48,7 +48,7 @@ if __name__ == '__main__':
     # print(fabric_rest().lakehouse_get_properties(workspaceName='WS_Steve', lakehouseName='LH_InternetSales'))
     # Is not supported yet
     # print(fabric_rest().lakehouse_update(workspaceName='WS_Steve', lakehouseName='LH_Test2', lakehouseNameNew='LH_Test3', lakehouseDescription='test description'))
-
+    print(fabric_rest().lakehouse_get_tables(workspaceName='WS_Steve', lakehouseName='LH_InternetSales'))
 
     ## TODO - Shortcut creation has some complexitites to it. 
     ## Need to think through various scenarios to see what makes sense in the short term and long term.
