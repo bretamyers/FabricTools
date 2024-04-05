@@ -1,6 +1,8 @@
 import requests, json, logging, time, datetime, math
+from typing import Literal
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 class fabric_rest():
     def __init__(self, audience:str='pbi'):
@@ -42,6 +44,7 @@ class fabric_rest():
 
     def response_long_running(self, response:requests.Response) -> requests.Response:
         responseLocation = response.headers.get('Location')
+        # Will pause 5 unique times before failing
         for _ in range(5):
             responseStatus = self.request(method='get', url=responseLocation)
             if responseStatus.json().get('status') != 'Succeeded':
@@ -76,7 +79,7 @@ class fabric_rest():
     ## Unoffice API to list users
     # Should change to an entra API in the future   
     def principal_list_response(self, prefix:str) -> requests.Response:
-        # response = self.request(method='get', url='https://wabi-west-us3-a-primary-redirect.analysis.windows.net/metadata/people?prefix=shane&type=3&limit=10&includeB2BUsers=true&relevantUsersFirst=true&includeRelevantGroups=false')
+        # response = self.request(method='get', url='https://wabi-west-us3-a-primary-redirect.analysis.windows.net/metadata/people?prefix=bret&type=3&limit=10&includeB2BUsers=true&relevantUsersFirst=true&includeRelevantGroups=false')
         response = self.request(method='get', url=f'https://wabi-west-us3-a-primary-redirect.analysis.windows.net/metadata/people?prefix={prefix}')
         return response
     
@@ -134,8 +137,7 @@ class fabric_rest():
     
 
     # https://learn.microsoft.com/en-us/rest/api/fabric/core/workspaces/add-workspace-role-assignment?tabs=HTTP
-    # role = ['Admin', 'Contributor', 'Member', 'Viewer']
-    def workspace_add_role_assignment(self, workspaceName:str, principalName:str, role:str) -> requests.Response:
+    def workspace_add_role_assignment(self, workspaceName:str, principalName:str, role:Literal['Admin', 'Contributor', 'Member', 'Viewer']) -> requests.Response:
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
         principal = {'id': self.principal_get_id(principalName=principalName), "type": "User"}
         body = {'principal': principal, 'role': role}
@@ -146,7 +148,7 @@ class fabric_rest():
     
     def workspace_delete_role_assignment(self, workspaceName:str, principalName:str) -> requests.Response:
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
-        principalId = '' # principalName ## need to query entra to get principal id
+        principalId = {'id': self.principal_get_id(principalName=principalName), "type": "User"}
         response = self.request(method='delete', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/roleAssignments/{principalId}')
         return response
     
@@ -390,11 +392,14 @@ class fabric_rest():
     #
     #   jobType = ['Pipeline']
     #
-    def item_run_job(self, workspaceName:str, itemName:str, jobType:str) -> requests.Response:
+    def item_run_job(self, workspaceName:str, itemName:str, jobType:Literal['Pipeline']) -> requests.Response:
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
         itemId = self.item_get_id(workspaceName=workspaceName, itemName=itemName)
-        #response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/jobs/instances{f'?jobType={jobType}' if jobType else ''}')
-        # exception because in preview, the job instance id is found in the response header and not body so we have to use requests directly.
+        # response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/jobs/instances{f'?jobType={jobType}' if jobType else ''}')
+        # print(f'{response=}')
+        # print(f'{response.headers=}')
+        ## exception because in preview, the job instance id is found in the response header and not body so we have to use requests directly.
+        logger.info('item_run_job')
         response = requests.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/jobs/instances{f'?jobType={jobType}' if jobType else ''}', headers=self.header)
         return response.headers.get('Location').split('jobs/instances/')[-1]
     
@@ -420,7 +425,7 @@ class fabric_rest():
 
     def lakehouse_get_shortcut(self, workspaceName:str, itemName:str, shortcutPath:str, shortcutName:str) -> requests.Response:
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
-        itemId = self.artifact_get_id(workspaceName=workspaceName, artifactName=itemName)
+        itemId = self.item_get_id(workspaceName=workspaceName, artifactName=itemName)
         # https://learn.microsoft.com/en-us/rest/api/fabric/core/onelake-shortcuts/get-shortcut?tabs=HTTP
         response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/shortcuts/{shortcutPath}/{shortcutName}')
         return response
@@ -434,9 +439,10 @@ class fabric_rest():
     # TODO
     def lakehouse_create_shortcut_adls(self, workspaceName:str, itemName:str, shortcutName:str, shortcutPath:str, adlsPath:str, adlsSubPath:str) -> requests.Response:
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
-        itemId = self.artifact_get_id(workspaceName=workspaceName, artifactName=itemName)
-        connectionId = ''
-        # https://learn.microsoft.com/en-us/rest/api/fabric/core/onelake-shortcuts/create-shortcut?tabs=HTTP
+        itemId = self.item_get_id(workspaceName=workspaceName, artifactName=itemName)
+        connectionId = '' # TODO
+        # https://learn.microsoft.com/en-us/rest/api/fabric/core/onelake-shortcuts/create-shortcut?tabs=HTTP#adlsgen2
+        # https://learn.microsoft.com/en-us/rest/api/fabric/core/onelake-shortcuts/create-shortcut?tabs=HTTP#target
         body = {"path": shortcutPath,
                 "name": shortcutName,
                 "target": {
@@ -454,7 +460,6 @@ class fabric_rest():
     # https://learn.microsoft.com/en-us/rest/api/fabric/core/onelake-shortcuts/create-shortcut?tabs=HTTP#create-shortcut-one-lake-target
     def lakehouse_create_shortcut_onelake(self, workspaceName:str, itemName:str, shortcutName:str, shortcutPath:str, onelakePath:str) -> requests.Response:
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
-        itemId = self.artifact_get_id(workspaceName=workspaceName, artifactName=itemName)
         itemId = self.lakehouse_get_shortcut(workspaceName=workspaceName, artifactName=itemName)
         # https://learn.microsoft.com/en-us/rest/api/fabric/core/onelake-shortcuts/create-shortcut?tabs=HTTP
         body = {"path": shortcutPath,
@@ -471,24 +476,29 @@ class fabric_rest():
         return response
 
 
-    def connections_response(self, connectionName:str) -> requests.Response:
-        response = self.request(method='get', url='https://api.powerbi.com/v2.0/myorg/me/gatewayClusterDatasources') #?$expand=users
+    def connection_response(self, connectionName:str) -> requests.Response:
+        response = self.request(method='get', url='https://api.powerbi.com/v2.0/myorg/me/gatewayClusterDatasources')
         return response
 
 
-    def connections_list(self, connectionName:str) -> list:
-        connections_list = self.connections_response(connectionName=connectionName).json().get('value')
-        return connections_list
+    def connection_list(self, connectionName:str) -> list:
+        connection_list = self.connection_response(connectionName=connectionName).json().get('value')
+        return connection_list
     
 
-    def connections_get_object(self, connectionName:str) -> dict:
-        connectionId = [connection for connection in self.connections_list(connectionName=connectionName) if connection.get('datasourceName') == connectionName][0]
+    def connection_get_object(self, connectionName:str) -> dict:
+        connectionId = [connection for connection in self.connection_list(connectionName=connectionName) if connection.get('datasourceName') == connectionName][0]
         return connectionId
     
     
-    def connections_get_id(self, connectionName:str) -> str:
-        connectionId = self.connections_get_object(connectionName=connectionName).get('id')
+    def connection_get_id(self, connectionName:str) -> str:
+        connectionId = self.connection_get_object(connectionName=connectionName).get('id')
         return connectionId
+    
+    
+    # https://learn.microsoft.com/en-us/rest/api/power-bi/gateways/create-datasource
+    # def connection_create(self, connectionName:str, connectionDefinition:dict) -> requests.Response:
+    #     pass
     
 
     def lakehouse_list_response(self, workspaceName:str) -> requests.Response:
@@ -511,6 +521,7 @@ class fabric_rest():
         lakehouseDefinitionParts = self.item_get_definition_response(workspaceName=workspaceName, itemName=lakehouseName, itemType='Lakehouse')
         return lakehouseDefinitionParts
     
+
     # Getting a 403 error
     def lakehouse_get_definition_parts(self, workspaceName:str, lakehouseName:str) -> str:
         lakehouseDefinitionParts = self.item_get_definition_parts(workspaceName=workspaceName, itemName=lakehouseName, itemType='Lakehouse')
@@ -520,6 +531,7 @@ class fabric_rest():
     def lakehouse_create(self, workspaceName:str, lakehouseName:str) -> str:
         lakehouseDefinitionParts = self.item_create(workspaceName=workspaceName, itemName=lakehouseName, itemType='Lakehouse', itemDefinition=None)
         return lakehouseDefinitionParts
+    
 
     # Is not supported yet
     def lakehouse_delete(self, workspaceName:str, lakehouseName:str) -> str:

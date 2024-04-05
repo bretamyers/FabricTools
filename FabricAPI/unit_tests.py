@@ -96,8 +96,9 @@ if __name__ == '__main__':
     # format='ipynb'
 
     # print(fabric_rest().capacity_list())
-    print(fabric_rest().principal_list(prefix='brmyers@bamsql.com'))
-    print(fabric_rest().principal_get_id(principalName='brmyers@bamsql.com'))
+    # print(fabric_rest().principal_list(prefix='brmyers@bamsql.com'))
+    print(fabric_rest().principal_list(prefix='sp_bam'))
+    # print(fabric_rest().principal_get_id(principalName='brmyers@bamsql.com'))
 
     ## Workspaces
     # print(fabric_rest().workspace_create(workspaceName='WS_API_Created_2', capacityName='fabricbamdemo'))
@@ -111,7 +112,7 @@ if __name__ == '__main__':
     # print(json.dumps(fabric_rest().workspace_get_access_details_user(userName='sp_bam'), indent=4))
     # print(json.dumps(fabric_rest().workspace_get_access_details_user(userName='admin MCAPS'), indent=4))
     # print(json.dumps(fabric_rest().workspace_get_access_details_user(userName='Shane Ochotny'), indent=4))
-    print(fabric_rest().workspace_add_role_assignment(workspaceName='WS_API_Code', principalName='brmyers@bamsql.com', role='Contributor'))
+    # print(fabric_rest().workspace_add_role_assignment(workspaceName='WS_API_Code', principalName='brmyers@bamsql.com', role='Contributor'))
 
 
     ## Users
