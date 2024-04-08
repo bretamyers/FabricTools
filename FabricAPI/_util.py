@@ -9,13 +9,13 @@ def _get_token_cached():
         
     return token
 
-def _base64_decode_bytes(base64String:str) -> str:
+def _base64_decode_bytes(base64String:str) -> bytes:
     return base64.b64decode(base64String.encode('utf-8'))
 
 def _base64_decode(base64String:str) -> str:
     return _base64_decode_bytes(base64String).decode('utf-8')
 
-def _base64_encode_bytes(string:str) -> str:
+def _base64_encode_bytes(string:str) -> bytes:
     return base64.b64encode(string.encode('utf-8'))
 
 def _base64_encode(string:str) -> str:
