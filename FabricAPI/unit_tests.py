@@ -81,6 +81,35 @@ def unit_test_users():
     pass
 
 
+def unit_test_devops():
+    # create workspace - WS_Dev
+    fabric_rest().workspace_create(workspaceName='WS_Dev')
+    # assign a fabric capacity to workspace - WS_Dev
+    fabric_rest().workspace_assign_capacity(workspaceName='WS_Dev', capacityName='fabricbamdemo')
+    # add users to workspace - WS_Dev
+    # fabric_rest().workspace_add_role_assignment(workspaceName='WS_Dev', principalName='admin', role='Admin')
+    # create pipeline - Create pipeline in WS_Dev
+    # pipelineDefinition = '' # read from file
+    # fabric_rest().pipeline_create(workspaceName='WS_Dev', pipelineName='PL_Simple', pipelineDefinition=pipelineDefinition)
+    # create notebook - Create notebook in WS_Dev
+    # notebookDefinition = '' # read from file
+    # fabric_rest().notebook_create(workspaceName='WS_Dev', notebookName='NB_Simple', notebookDefinition=notebookDefinition)
+    # create lakehouse - Create lakehouse in WS_Dev
+    # fabric_rest().lakehouse_create(workspaceName='WS_Dev', lakehouseName='LH_Dev')
+    # create shortcut files - Create shortcut files in WS_Dev
+    # create shortcut tables - Create shortcut tables in WS_Dev
+    # create semantic model - Create semantic model in WS_Dev
+    # fabric_rest().semantic_model_create(workspaceName='WS_Dev', semanticModelName='SM_Dev')
+
+    # create workspace - WS_Test
+    # add users to workspace - WS_Test
+    # clone pipeline - WS_Dev to WS_Test
+    # clone notebook - WS_Dev to WS_Test
+    # clone lakehouse - WS_Dev to WS_Test
+    # clone semantic model - WS_Dev to WS_Test - decode, change connect to new lakehouse, encode, deploy
+    pass
+
+
 
 if __name__ == '__main__':
     

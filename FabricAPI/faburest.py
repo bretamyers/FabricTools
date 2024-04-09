@@ -310,32 +310,33 @@ class fabric_rest():
     
 
     # https://learn.microsoft.com/en-us/rest/api/fabric/admin/items/list-items?tabs=HTTP
-    def item_get_response(self, workspaceName:str, itemType:str='') -> requests.Response:
+    def item_get_response(self, workspaceName:str, itemType:str=None) -> requests.Response:
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
-        itemTypeFilter = f'type={itemType}' if itemType else ''
-        response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items?{itemTypeFilter}')
+        # itemTypeFilter = f'type={itemType}' if itemType else ''
+        # response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items?{itemTypeFilter}')
+        response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items{f'?type={itemType}' if itemType else ''}')
         return response
 
 
-    def item_list(self, workspaceName:str, itemType:str='') -> list:
+    def item_list(self, workspaceName:str, itemType:str=None) -> list:
         item_get_response = self.item_get_response(workspaceName=workspaceName, itemType=itemType)
         item_list = item_get_response.json().get('value')
         return item_list
 
 
-    def item_get_object(self, workspaceName:str, itemName:str, itemType:str='') -> dict:
+    def item_get_object(self, workspaceName:str, itemName:str, itemType:str=None) -> dict:
         item_list = self.item_list(workspaceName=workspaceName, itemType=itemType)
         artifact = [item for item in item_list if item.get('displayName') == itemName][0]
         return artifact
 
 
-    def item_get_id(self, workspaceName:str, itemName:str, itemType:str='') -> str:
+    def item_get_id(self, workspaceName:str, itemName:str, itemType:str=None) -> str:
         artifactObject = self.item_get_object(workspaceName=workspaceName, itemName=itemName, itemType=itemType)
         artifactId = artifactObject.get('id')
         return artifactId
 
 
-    def item_get_definition_response(self, workspaceName:str, itemName:str, itemType:str='', format=None) -> requests.Response:
+    def item_get_definition_response(self, workspaceName:str, itemName:str, itemType:str=None, format=None) -> requests.Response:
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
         itemId = self.item_get_id(workspaceName=workspaceName, itemName=itemName, itemType=itemType)
         # logger.info(f'item_get_definition_response {workspaceName=}:{workspaceId=} - {itemName=}:{itemId}')
@@ -495,7 +496,7 @@ class fabric_rest():
         connectionId = self.connection_get_object(connectionName=connectionName).get('id')
         return connectionId
     
-    
+
     # https://learn.microsoft.com/en-us/rest/api/power-bi/gateways/create-datasource
     # def connection_create(self, connectionName:str, connectionDefinition:dict) -> requests.Response:
     #     pass
