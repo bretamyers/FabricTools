@@ -11,15 +11,6 @@ class faburest():
         self.pipeline = pipeline.pipeline()
         self.lakehouse = lakehouse.lakehouse()
 
-    # def workspace(self):
-    #     return workspace.workspace()
-        
-    # def item(self):
-    #     return item.item()
-    
-    # def pipeline(self):
-    #     return pipeline.pipeline()
-
 
 if __name__ == '__main__':
 
