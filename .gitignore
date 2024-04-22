@@ -4,7 +4,4 @@ FabricAPI/.venv/*
 FabricAPI/__pycache__/*
 FabricAPI/.env.toml
 FabricAPI/test.py
-/FabricAPI/v2/__pycache__/*
-FabricAPI/v2/__pycache__/pipeline.cpython-312.pyc
-FabricAPI/v2/__pycache__/workspace.cpython-312.pyc
-FabricAPI/v2/__pycache__/pipeline.cpython-312.pyc
+FabricAPI/v2/__pycache__
