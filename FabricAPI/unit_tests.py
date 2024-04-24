@@ -9,16 +9,23 @@ from faburest import fabric_rest
 logger = logging.getLogger(__name__)
 
 
-def unit_test_workspace():
-    fr = fabric_rest()
-    fr.workspace_create(workspaceName='WS_Steve')
+def unit_test_workspace(fr:fabric_rest):
+    workspaceName = 'WS_UnitTest_Workspace'
     # create workspace
+    fr.workspace_create(workspaceName=workspaceName, capacityName='fabricbamdemo')
     # check workspace exists (list workspace)
+    fr.workspace_get_id(workspaceName=workspaceName)
     # rename workspace
+    fr.workspace_rename(workspaceName=workspaceName, workspaceNameTarget='WS_UnitTest_Workspace_Renamed', description='Test Description')
     # check workspace exists (list workspace)
     # update workspace
+    fr.workspace_assign_capacity(workspaceName=workspaceName, capacityName='fabricbamtemp')
     # check workspace updated
-    pass
+    fr.workspace_get_id(workspaceName=workspaceName)
+    
+    # cleanup artifacts
+    # fr.workspace_delete(workspaceName=workspaceName)
+    print('unit_test_lakehouse completed')
 
 
 def unit_test_pipeline():
@@ -53,10 +60,17 @@ def unit_test_notebook():
     pass
 
 
-def unit_test_lakehouse():
+def unit_test_lakehouse(fr:fabric_rest):
+    workspaceName = 'WS_UnitTest_Lakehouse'
+    lakehouseName = 'LH_UnitTest_Lakehouse'
+    # create workspace
+    fr.workspace_create(workspaceName=workspaceName, capacityName='fabricbamdemo')
     # create lakehouse
+    fr.lakehouse_create(workspaceName=workspaceName, lakehouseName=lakehouseName)
     # check lakehouse exists (list lakehouse)
+    fr.lakehouse_get_object(workspaceName=workspaceName, lakehouseName=lakehouseName)
     # rename lakehouse
+    # fr.lakheouse_re
     # check lakehouse exists (list lakehouse)
     # update lakehouse
     # check lakehouse updated
@@ -64,7 +78,10 @@ def unit_test_lakehouse():
     # check lakehouse is deleted (list lakehouse)
     # create lakehouse shortcut
     # check lakehouse shortcut exists (list lakehouse)
-    pass
+
+    # cleanup artifacts
+    # fr.workspace_delete(workspaceName=workspaceName)
+    print('unit_test_lakehouse completed')
 
 
 def unit_test_scale():
@@ -117,6 +134,9 @@ if __name__ == '__main__':
     logger.addHandler(logging.StreamHandler())
     logger.setLevel(logging.INFO)
 
+    fr = fabric_rest()
+
+    unit_test_lakehouse(fr=fr)
 
     ## Items
     # print(fabric_rest().item_list(workspaceName='WS_Steve'))
@@ -126,7 +146,7 @@ if __name__ == '__main__':
 
     # print(fabric_rest().capacity_list())
     # print(fabric_rest().principal_list(prefix='brmyers@bamsql.com'))
-    print(fabric_rest().principal_list(prefix='sp_bam'))
+    # print(fabric_rest().principal_list(prefix='sp_bam'))
     # print(fabric_rest().principal_get_id(principalName='brmyers@bamsql.com'))
 
     ## Workspaces

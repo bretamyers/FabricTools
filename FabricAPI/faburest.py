@@ -160,6 +160,23 @@ class fabric_rest():
         return workspaceId
     
 
+    def _workspace_update_metadata(self, workspaceName:str, workspaceNameTarget:str=None, workspaceDescription:str=None) -> requests.Response:
+        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
+        body = {k:v for k,v in {'displayName':workspaceNameTarget, 'description': workspaceDescription}.items() if v != ''}
+        response = self.request(method='patch', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}', body=body)
+        return response
+
+
+    def workspace_rename(self, workspaceName:str, workspaceNameTarget:str) -> requests.Response:
+        response = self._workspace_update_metadata(workspaceName=workspaceName, workspaceNameTarget=workspaceNameTarget)
+        return response
+    
+
+    def workspace_set_description(self, workspaceName:str, workspaceDescription:str) -> requests.Response:
+        response = self._workspace_update_metadata(workspaceName=workspaceName, workspaceDescription=workspaceDescription)
+        return response
+    
+
     def workspace_get_access_details_response(self, workspaceName:str) -> requests.Response:
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
         response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/admin/workspaces/{workspaceId}/users')
