@@ -327,7 +327,7 @@ class fabric_rest():
     
 
     # https://learn.microsoft.com/en-us/rest/api/fabric/admin/items/list-items?tabs=HTTP
-    def item_get_response(self, workspaceName:str, itemType:str=None) -> requests.Response:
+    def item_get_response(self, workspaceName:str, itemType:Literal['Dashboard', 'DataPipeline', 'Datamart', 'Eventstream', 'KQLDataConnection', 'KQLDatabase', 'KQLQueryset', 'Lakehouse', 'MLExperiment', 'MLModel', 'MirroredWarehouse', 'Notebook', 'PaginatedReport', 'Report', 'SQLEndpoint', 'SemanticModel', 'SparkJobDefinition', 'Warehouse']=None) -> requests.Response:
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
         # itemTypeFilter = f'type={itemType}' if itemType else ''
         # response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items?{itemTypeFilter}')
@@ -335,7 +335,7 @@ class fabric_rest():
         return response
 
 
-    def item_list(self, workspaceName:str, itemType:str=None) -> list:
+    def item_list(self, workspaceName:str, itemType:Literal['Dashboard', 'DataPipeline', 'Datamart', 'Eventstream', 'KQLDataConnection', 'KQLDatabase', 'KQLQueryset', 'Lakehouse', 'MLExperiment', 'MLModel', 'MirroredWarehouse', 'Notebook', 'PaginatedReport', 'Report', 'SQLEndpoint', 'SemanticModel', 'SparkJobDefinition', 'Warehouse']=None) -> list:
         item_get_response = self.item_get_response(workspaceName=workspaceName, itemType=itemType)
         item_list = item_get_response.json().get('value')
         return item_list
@@ -592,5 +592,13 @@ class fabric_rest():
         return lakehouseTableList
 
 
+    def sqlendpoint_list_response(self, workspaceName:str) -> requests.Response:
+        sqlendpointResponse = self.item_get_response(workspaceName=workspaceName, itemType='SqlEndpoint')
+        return sqlendpointResponse
+
+
+    def sqlendpoint_list(self, workspaceName:str) -> list:
+        sqlendpointList = self.sqlendpoint_list_response(workspaceName=workspaceName).json().get('value')
+        return sqlendpointList
 
 

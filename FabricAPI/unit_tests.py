@@ -127,6 +127,14 @@ def unit_test_devops():
     pass
 
 
+def unit_test_sqlendpoint(fr:fabric_rest):
+    print(fr.sqlendpoint_list_response(workspaceName='WS_Steve').json())
+    print(fr.sqlendpoint_list(workspaceName='WS_Steve'))
+    print(fr.item_list(workspaceName='WS_Steve', itemType='SqlEndpoint'))
+    fr.item_list(workspaceName='WS_Steve', itemType=None)
+    fr.item_list(workspaceName='WS_Steve')
+    
+
 
 if __name__ == '__main__':
     
@@ -136,7 +144,9 @@ if __name__ == '__main__':
 
     fr = fabric_rest()
 
-    unit_test_lakehouse(fr=fr)
+    # unit_test_lakehouse(fr=fr)
+
+    unit_test_sqlendpoint(fr=fr)
 
     ## Items
     # print(fabric_rest().item_list(workspaceName='WS_Steve'))
