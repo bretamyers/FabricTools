@@ -1,22 +1,78 @@
-import tomllib, base64
+import tomllib, base64, json, datetime
+from azure.identity import InteractiveBrowserCredential
+import os
 
 
-def _get_token_cached():
+def _get_token_cached(audience:str="Fabric") -> str:
     token = ''
-    with open('.env.toml', 'rb') as f:
-        config = tomllib.load(f)
-        token = config['EnvironmentVariables']['Token_Fabric']
-        
+    # with open('.env.toml', 'rb') as f:
+    #     config = tomllib.load(f)
+    #     token = config['EnvironmentVariables']['Token_Fabric']
+    if _token_cache_file_exists() and _token_cache_audeince_exists(audience):
+        with open('_cache_token.json', 'rb') as f:
+            token = json.load(f)[audience]
+    else:
+        _write_token_to_cache()
+        token = _get_token_cached()
+
     return token
+
+
+def _token_cache_audeince_exists(audience:str) -> bool:
+    with open('_cache_token.json', 'rb') as f:
+        token = json.load(f)
+        if audience in token:
+            return True
+        else:
+            return False
+
+
+def _decode_token(token) -> dict:
+    base64_meta_data = token.split(".")[1].encode("utf-8") + b'=='
+    json_bytes = base64.decodebytes(base64_meta_data)
+    json_string = json_bytes.decode("utf-8")
+    json_dict = json.loads(json_string)
+    return json_dict
+
+
+def _get_token_expiration_date(token, localTZ:bool=None) -> str:
+    json_dict = _decode_token(token=token)
+    if localTZ:
+        expiration_date = datetime.datetime.fromtimestamp(json_dict["exp"])
+    else:
+        expiration_date = datetime.datetime.fromtimestamp(datetime.UTC, json_dict["exp"])
+    return expiration_date
+
+
+def _token_cache_file_exists():
+    if os.path.exists('_cache_token.json'):
+        return True
+    else:  
+        return False
+
+
+def _get_token_fabric() -> str:
+    accessToken = InteractiveBrowserCredential().get_token("https://api.fabric.microsoft.com/.default")
+    return accessToken.token
+
+
+def _write_token_to_cache():
+    tokenDict = {"Fabric": _get_token_fabric()}
+    with open('_cache_token.json', 'w') as f:
+        json.dump(tokenDict, f)
+
 
 def _base64_decode_bytes(base64String:str) -> bytes:
     return base64.b64decode(base64String.encode('utf-8'))
 
+
 def _base64_decode(base64String:str) -> str:
     return _base64_decode_bytes(base64String).decode('utf-8')
 
+
 def _base64_encode_bytes(string:str) -> bytes:
     return base64.b64encode(string.encode('utf-8'))
+
 
 def _base64_encode(string:str) -> str:
     return _base64_encode_bytes(string).decode('utf-8')
@@ -25,8 +81,16 @@ def _base64_encode(string:str) -> str:
 
 if __name__ == '__main__':
 
-    print(_base64_encode('this is a test'))
-    print(_base64_decode('dGhpcyBpcyBhIHRlc3Q='))
+    # print(_base64_encode('this is a test'))
+    # print(_base64_decode('dGhpcyBpcyBhIHRlc3Q='))
+
+    token = _get_token_cached()
+    print(_decode_token(token=token))
+    print(_get_token_expiration_date(token=token, localTZ=True))
+    # _write_token_to_cache()
+    # token = _get_token_cached()
+    # print(_decode_token(token=token))
+    # print(_get_token_expiration_date(token=token, localTZ=True))
 
 
     # myString = 'this is a test'

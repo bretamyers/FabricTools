@@ -146,7 +146,9 @@ if __name__ == '__main__':
 
     # unit_test_lakehouse(fr=fr)
 
-    unit_test_sqlendpoint(fr=fr)
+    # unit_test_sqlendpoint(fr=fr)
+
+    print(fr.item_get_object(workspaceName='WS_Steve', itemName='Notebook 3'))
 
     ## Items
     # print(fabric_rest().item_list(workspaceName='WS_Steve'))
