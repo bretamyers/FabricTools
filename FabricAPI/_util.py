@@ -3,13 +3,16 @@ from azure.identity import InteractiveBrowserCredential
 import os
 
 
+CACHE_FILE = '_cache_token.json'
+
+
 def _get_token_cached(audience:str="Fabric") -> str:
     token = ''
     # with open('.env.toml', 'rb') as f:
     #     config = tomllib.load(f)
     #     token = config['EnvironmentVariables']['Token_Fabric']
-    if _token_cache_file_exists() and _token_cache_audeince_exists(audience):
-        with open('_cache_token.json', 'rb') as f:
+    if _token_cache_file_exists() and _token_cache_audience_exists(audience):
+        with open(CACHE_FILE, 'rb') as f:
             token = json.load(f)[audience]
     else:
         _write_token_to_cache()
@@ -18,12 +21,13 @@ def _get_token_cached(audience:str="Fabric") -> str:
     return token
 
 
-def _token_cache_audeince_exists(audience:str) -> bool:
-    with open('_cache_token.json', 'rb') as f:
+def _token_cache_audience_exists(audience:str) -> bool:
+    with open(CACHE_FILE, 'rb') as f:
         token = json.load(f)
-        if audience in token:
+        if audience in token.keys():
             return True
         else:
+            print('not found')
             return False
 
 
@@ -45,7 +49,7 @@ def _get_token_expiration_date(token, localTZ:bool=None) -> str:
 
 
 def _token_cache_file_exists():
-    if os.path.exists('_cache_token.json'):
+    if os.path.exists(CACHE_FILE):
         return True
     else:  
         return False
@@ -58,7 +62,7 @@ def _get_token_fabric() -> str:
 
 def _write_token_to_cache():
     tokenDict = {"Fabric": _get_token_fabric()}
-    with open('_cache_token.json', 'w') as f:
+    with open(CACHE_FILE, 'w') as f:
         json.dump(tokenDict, f)
 
 
@@ -84,13 +88,15 @@ if __name__ == '__main__':
     # print(_base64_encode('this is a test'))
     # print(_base64_decode('dGhpcyBpcyBhIHRlc3Q='))
 
+
+
     token = _get_token_cached()
     print(_decode_token(token=token))
     print(_get_token_expiration_date(token=token, localTZ=True))
-    # _write_token_to_cache()
-    # token = _get_token_cached()
-    # print(_decode_token(token=token))
-    # print(_get_token_expiration_date(token=token, localTZ=True))
+    ## _write_token_to_cache()
+    token = _get_token_cached()
+    print(_decode_token(token=token))
+    print(_get_token_expiration_date(token=token, localTZ=True))
 
 
     # myString = 'this is a test'
