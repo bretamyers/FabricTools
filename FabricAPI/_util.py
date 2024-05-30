@@ -12,7 +12,6 @@ def _get_token_cached(audience:str="Fabric") -> str:
     #     config = tomllib.load(f)
     #     token = config['EnvironmentVariables']['Token_Fabric']
     if _token_cache_file_exists() and _token_cache_audience_exists(audience):
-        print('Token found in cache')
         with open(CACHE_FILE, 'rb') as f:
             token = json.load(f)[audience]
             if _token_cache_expired(token):
