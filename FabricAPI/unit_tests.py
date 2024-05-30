@@ -148,7 +148,24 @@ if __name__ == '__main__':
 
     # unit_test_sqlendpoint(fr=fr)
 
-    print(fr.item_get_object(workspaceName='WS_Steve', itemName='Notebook 3'))
+    # print(fr.item_get_object(workspaceName='WS_Steve', itemName='Notebook 3'))
+
+    ## Domains
+    # print(fr.domain_list_response().json())
+    print(fr.domain_list())
+    print(fr.domain_get(domainName='Sales'))
+    print(fr.domain_list_workspaces(domainName='Sales'))
+    # print(fr.domain_create(domainName='Test from API 2'))
+    # print(fr.domain_delete(domainName='Test from API 2'))
+    print(fr.principal_list(prefix='admin'))
+
+
+    # print(fr.capacity_list())
+    # print(fr.domain_assign_capacity(domainName='Test from API 2', capacityName='fabricbamdemo'))
+    # print(fr.domain_assign_workspace(domainName='Test from API', workspaceName='WS_Scott'))
+    # print(fr.domain_list_workspaces(domainName='Test from API'))
+    # print(fr.notebook_get_item_definition(workspaceName='WS_Steve', notebookName='Notebook 3'))
+    
 
     ## Items
     # print(fabric_rest().item_list(workspaceName='WS_Steve'))

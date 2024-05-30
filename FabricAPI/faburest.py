@@ -51,16 +51,22 @@ class fabric_rest():
                 logger.info(f'Operation {response.headers.get("x-ms-operation-id")} is not ready. Waiting for {response.headers.get("Retry-After")} seconds.')
                 time.sleep(int(response.headers.get('Retry-After')))
             else:
-                logger.info('Payload is ready. Requesting the result.')
-                responseResult = self.request(method='get', url=f'{responseLocation}/result')
-                return responseResult
+                print(f'{responseStatus.headers=}')
+                if responseStatus.headers.get('Location') is None:
+                    logger.info('Long running operation has completed. No result to be returned')
+                    return responseStatus
+                else:
+                    logger.info('Payload is ready. Requesting the result.')
+                    # responseResult = self.request(method='get', url=f'{responseLocation}/result')
+                    responseResult = self.request(method='get', url=responseStatus.headers.get('Location'))
+                    return responseResult
 
 
-    ## PBI API
     # https://learn.microsoft.com/en-us/rest/api/power-bi/capacities/get-capacities
     def capacity_list_response(self) -> requests.Response:
         # response = self.request(method='get', url='https://wabi-west-us3-a-primary-redirect.analysis.windows.net/capacities/listbyrollouts')
-        response = self.request(method='get', url='https://api.powerbi.com/v1.0/myorg/capacities')
+        # response = self.request(method='get', url='https://api.powerbi.com/v1.0/myorg/capacities')
+        response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/capacities')
         return response
     
 
@@ -76,7 +82,7 @@ class fabric_rest():
         return capacity
     
 
-    ## Unoffice API to list users
+    ## Unoffical API to list users
     # Should change to an entra API in the future   
     def principal_list_response(self, prefix:str) -> requests.Response:
         # response = self.request(method='get', url='https://wabi-west-us3-a-primary-redirect.analysis.windows.net/metadata/people?prefix=bret&type=3&limit=10&includeB2BUsers=true&relevantUsersFirst=true&includeRelevantGroups=false')
@@ -84,7 +90,7 @@ class fabric_rest():
         return response
     
 
-    def principal_list(self, prefix:str) -> requests.Response:
+    def principal_list(self, prefix:str='') -> requests.Response:
         response = self.principal_list_response(prefix).json()
         return response
     
@@ -603,5 +609,77 @@ class fabric_rest():
     def sqlendpoint_list(self, workspaceName:str) -> list:
         sqlendpointList = self.sqlendpoint_list_response(workspaceName=workspaceName).json().get('value')
         return sqlendpointList
+
+
+    def domain_list_response(self) -> requests.Response:
+        domainResponse = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/admin/domains')
+        return domainResponse
+    
+    
+    def domain_list(self) -> list:
+        domainList = self.domain_list_response().json().get('domains')
+        return domainList
+    
+
+    def domain_get(self, domainName:str) -> dict:
+        domain = [domain for domain in self.domain_list() if domain.get('displayName') == domainName][0]
+        return domain
+
+    def domain_list_workspaces(self, domainName:str) -> list:
+        domainId = self.domain_get(domainName=domainName).get('id')
+        domainWorkspaces = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/admin/domains/{domainId}/workspaces')
+        return domainWorkspaces.json().get('value')
+    
+
+    def domain_create_response(self, domainName:str, description:str=None, parentDomainId:str=None) -> requests.Response:
+        # body = {"displayName": domainName
+        #         ,**({"description": description} if description is not None else {})
+        #         ,**({"parentDomainId": parentDomainId} if parentDomainId is not None else {})
+        #         }
+        body = {k:v for k,v in 
+                    {'displayName':domainName
+                     ,'description': description
+                     ,'parentDomainId': parentDomainId
+                    }.items() if v != ''
+                }
+        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/admin/domains', body=body)
+        return response
+
+
+    def domain_create(self, domainName:str, description:str=None, parentDomainId:str=None) -> dict:
+        response = self.domain_create_response(domainName=domainName, description=description, parentDomainId=parentDomainId)
+        return response.json()
+
+
+    def domain_delete(self, domainName:str) -> requests.Response:
+        domainId = self.domain_get(domainName=domainName).get('id')
+        response = self.request(method='delete', url=f'https://api.fabric.microsoft.com/v1/admin/domains/{domainId}')
+        return response
+    
+
+    def domain_assign_capacity(self, domainName:str, capacityName:str) -> requests.Response:
+        domainId = self.domain_get(domainName=domainName).get('id')
+        capacityId = self.capacity_get(capacityName=capacityName).get('id')
+        body = {'capacitiesIds': [capacityId]}
+        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/admin/domains/{domainId}/assignWorkspacesByCapacities', body=body)
+        return response
+
+
+    def domain_assign_workspace(self, domainName:str, workspaceName:str):
+        domainId = self.domain_get(domainName=domainName).get('id')
+        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
+        body = {'workspacesIds': [workspaceId]}
+        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/admin/domains/{domainId}/assignWorkspaces', body=body)
+        return response
+    
+
+    def domain_assign_principals(self, domainName:str, principalName:str):
+        domainId = self.domain_get(domainName=domainName).get('id')
+        principalId = self.workspace_get_id(workspaceName=principalName)
+        body = {'principals': [principalId]}
+        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/admin/domains/{domainId}/assignWorkspacesByPrincipals', body=body)
+        return response
+    
+
 
 
