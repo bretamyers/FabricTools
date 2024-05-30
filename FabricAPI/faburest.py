@@ -343,8 +343,11 @@ class fabric_rest():
 
     def item_get_object(self, workspaceName:str, itemName:str, itemType:str=None) -> dict:
         item_list = self.item_list(workspaceName=workspaceName, itemType=itemType)
-        artifact = [item for item in item_list if item.get('displayName') == itemName][0]
-        return artifact
+        try:
+            artifact = [item for item in item_list if item.get('displayName') == itemName][0]
+            return artifact
+        except IndexError as ie:
+            print(f'Item {itemName} not found in workspace {workspaceName} - {ie}')
 
 
     def item_get_id(self, workspaceName:str, itemName:str, itemType:str=None) -> str:

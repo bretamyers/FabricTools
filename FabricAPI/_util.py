@@ -12,8 +12,12 @@ def _get_token_cached(audience:str="Fabric") -> str:
     #     config = tomllib.load(f)
     #     token = config['EnvironmentVariables']['Token_Fabric']
     if _token_cache_file_exists() and _token_cache_audience_exists(audience):
+        print('Token found in cache')
         with open(CACHE_FILE, 'rb') as f:
             token = json.load(f)[audience]
+            if _token_cache_expired(token):
+                _write_token_to_cache()
+                token = _get_token_cached()
     else:
         _write_token_to_cache()
         token = _get_token_cached()
@@ -31,6 +35,14 @@ def _token_cache_audience_exists(audience:str) -> bool:
             return False
 
 
+def _token_cache_expired(token:str) -> bool:
+    expiration_date = _get_token_expiration_date(token=token)
+    if expiration_date < datetime.datetime.now() + datetime.timedelta(minutes=1):
+        return True
+    else:
+        return False
+    
+
 def _decode_token(token) -> dict:
     base64_meta_data = token.split(".")[1].encode("utf-8") + b'=='
     json_bytes = base64.decodebytes(base64_meta_data)
@@ -39,7 +51,7 @@ def _decode_token(token) -> dict:
     return json_dict
 
 
-def _get_token_expiration_date(token, localTZ:bool=None) -> str:
+def _get_token_expiration_date(token, localTZ:bool=True) -> str:
     json_dict = _decode_token(token=token)
     if localTZ:
         expiration_date = datetime.datetime.fromtimestamp(json_dict["exp"])
