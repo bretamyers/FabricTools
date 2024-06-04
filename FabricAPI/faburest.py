@@ -296,12 +296,12 @@ class fabric_rest():
 
 
     def workspace_get_access_details(self, workspaceName:str) -> list:
-        workspaceAccessDetail = self.workspace_get_access_details_response(workspaceName=workspaceName).json().get('accessDetails')
+        workspaceAccessDetail = self.response_list_unravel(self.workspace_get_access_details_response(workspaceName=workspaceName), param='accessDetails')
         return workspaceAccessDetail
     
 
     def _workspace_get_access_details_workspace_id(self, workspaceId:str) -> list:
-        workspaceAccessDetail = self._workspace_get_access_details_response_workspace_id(workspaceId=workspaceId).json().get('accessDetails')
+        workspaceAccessDetail = self.response_list_unravel(self._workspace_get_access_details_response_workspace_id(workspaceId=workspaceId), param='accessDetails')
         return workspaceAccessDetail
 
 
@@ -341,7 +341,7 @@ class fabric_rest():
     
 
     def pipeline_list(self, workspaceName:str) -> list:
-        pipelineList = self.pipeline_list_response(workspaceName=workspaceName).json().get('value')
+        pipelineList = self.response_list_unravel(self.pipeline_list_response(workspaceName=workspaceName), param='value')
         return pipelineList
     
 
@@ -444,7 +444,6 @@ class fabric_rest():
 
     def item_list(self, workspaceName:str, itemType:Literal['Dashboard', 'DataPipeline', 'Datamart', 'Eventstream', 'KQLDataConnection', 'KQLDatabase', 'KQLQueryset', 'Lakehouse', 'MLExperiment', 'MLModel', 'MirroredWarehouse', 'Notebook', 'PaginatedReport', 'Report', 'SQLEndpoint', 'SemanticModel', 'SparkJobDefinition', 'Warehouse']=None) -> list:
         item_get_response = self.item_get_response(workspaceName=workspaceName, itemType=itemType)
-        # item_list = item_get_response.json().get('value')
         item_list = self.response_list_unravel(item_get_response, param='value')
         return item_list
 
@@ -611,7 +610,7 @@ class fabric_rest():
 
 
     def connection_list(self, connectionName:str) -> list:
-        connection_list = self.connection_response(connectionName=connectionName).json().get('value')
+        connection_list = self.response_list_unravel(self.connection_response(connectionName=connectionName), param='value')
         return connection_list
     
 
@@ -699,7 +698,7 @@ class fabric_rest():
 
 
     def lakehouse_get_tables(self, workspaceName:str, lakehouseName:str) -> list:
-        lakehouseTableList = self.lakehouse_get_tables_response(workspaceName=workspaceName, lakehouseName=lakehouseName).json().get('data')
+        lakehouseTableList = self.response_list_unravel(self.lakehouse_get_tables_response(workspaceName=workspaceName, lakehouseName=lakehouseName), param='data')
         return lakehouseTableList
 
 
@@ -709,7 +708,7 @@ class fabric_rest():
 
 
     def sqlendpoint_list(self, workspaceName:str) -> list:
-        sqlendpointList = self.sqlendpoint_list_response(workspaceName=workspaceName).json().get('value')
+        sqlendpointList = self.response_list_unravel(self.sqlendpoint_list_response(workspaceName=workspaceName), param='value')
         return sqlendpointList
 
 
@@ -719,7 +718,7 @@ class fabric_rest():
     
     
     def domain_list(self) -> list:
-        domainList = self.domain_list_response().json().get('domains')
+        domainList = self.response_list_unravel(self.domain_list_response(), param='domains')
         return domainList
     
 
@@ -728,10 +727,15 @@ class fabric_rest():
         return domain
 
 
-    def domain_list_workspaces(self, domainName:str) -> list:
+    def domain_list_workspaces_response(self, domainName:str) -> list:
         domainId = self.domain_get(domainName=domainName).get('id')
         domainWorkspaces = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/admin/domains/{domainId}/workspaces')
-        return domainWorkspaces.json().get('value')
+        return domainWorkspaces
+    
+
+    def domain_list_workspaces(self, domainName:str) -> list:
+        domainWorkspaces = self.response_list_unravel(self.domain_list_workspaces_response(domainName=domainName), param='value')
+        return domainWorkspaces
     
 
     def domain_create_response(self, domainName:str, description:str=None, parentDomainId:str=None) -> requests.Response:

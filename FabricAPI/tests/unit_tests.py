@@ -22,6 +22,9 @@ def unit_test_workspace(fr:fabric_rest):
     fr.workspace_assign_capacity(workspaceName=workspaceName, capacityName='fabricbamtemp')
     # check workspace updated
     fr.workspace_get_id(workspaceName=workspaceName)
+
+    
+    print(fr.workspace_get_access_details(workspaceName='WS_Steve'))
     
     # cleanup artifacts
     # fr.workspace_delete(workspaceName=workspaceName)
@@ -157,11 +160,15 @@ if __name__ == '__main__':
     import uuid
     workspaceName = f'{workspacePrefix}{uuid.uuid4().hex}'
     print(workspaceName)
+    
+    # logger = logging.getLogger('faburest')
+    # logger.setLevel(logging.INFO)
+    # logger.info('Starting unit tests')
 
     # print(fr.workspace_list())
     # print(fr.workspace_get_id(workspaceName='WS_Steve'))
-    definition = fr.notebook_get_item_definition(workspaceName='WS_Audit_All_Activities', notebookName='NB_Faburest')[0] #, type='Notebook')
-    print(fr.base64_decode(definition['definition']['parts'][0]['payload']))
+    # definition = fr.notebook_get_item_definition(workspaceName='WS_Audit_All_Activities', notebookName='NB_Faburest')[0] #, type='Notebook')
+    # print(fr.base64_decode(definition['definition']['parts'][0]['payload']))
 
     # print(fr.request(method='get', url='https://api.fabric.microsoft.com/v1/operations/1916279e-7d2e-4964-b397-e8b0c214c86d'))
 
@@ -182,7 +189,7 @@ if __name__ == '__main__':
     # print(fr.item_get_object(workspaceName='WS_Steve', itemName='Notebook 3'))
 
     ## Domains
-    # # print(fr.domain_list_response().json())
+    # print(fr.domain_list())
     # print(fr.domain_list())
     # print(fr.domain_get(domainName='Sales'))
     # print(fr.domain_list_workspaces(domainName='Sales'))
@@ -193,7 +200,7 @@ if __name__ == '__main__':
 
     # print(fr.principal_list_access(principalName='scott@bamsql.com'))
     # print(fr.capacity_list_response())
-    # print(fr.capacity_list())
+    print(fr.capacity_list())
 
     ## TODO
     # print(fr.principal_list(prefix='admin'))
