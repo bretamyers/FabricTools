@@ -135,11 +135,13 @@ def unit_test_sqlendpoint(fr:fabric_rest):
     fr.item_list(workspaceName='WS_Steve')
 
 
-def cleanup_remove_all_workspace(fr:fabric_rest):
-    workspaceList = fr.workspace_list(state='Active') #name='WS_042024')
-    print(workspaceList)
-#     for workspace in workspaceList:
-#         fr.workspace_delete(workspaceName=workspace['name'])
+def cleanup_remove_all_workspace(fr:fabric_rest, workspacePrefix:str='API_'):
+    # workspaceList = fr.workspace_list(state='Active') #name='WS_042024')
+    workspaceList = [workspace for workspace in fr.workspace_list() if workspace.get('displayName').startswith(workspacePrefix)]
+    # print(workspaceList)
+    for workspace in workspaceList:
+        print(f'Deleting workspace: \'{workspace["displayName"]}\'')
+        fr.workspace_delete(workspaceName=workspace['displayName'])
 #     print('cleanup_remove_all_workspace completed'
 
 
@@ -151,7 +153,15 @@ if __name__ == '__main__':
 
     fr = fabric_rest()
 
-    cleanup_remove_all_workspace(fr=fr)
+    workspacePrefix = 'API_'
+    import uuid
+    workspaceName = f'{workspacePrefix}{uuid.uuid4().hex}'
+    print(workspaceName)
+    
+    # fr.workspace_create(workspaceName='API_1', capacityName='fabricbamdemo')
+
+    # cleanup_remove_all_workspace(fr=fr, workspacePrefix=workspacePrefix)
+
     # print(fr.response_build_parameters(workspace='steve', param1=None, test='adf'))
     # print(f'www.microsoft.com{fr.response_build_parameters(workspace="steve", param1='test')}')
 

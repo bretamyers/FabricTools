@@ -56,7 +56,6 @@ class fabric_rest():
                 response = self.request(method='get', url=f'{response.json().get("continuationUri")}', responseList=responseList)
             return self.response_parse(responseList)
         except requests.exceptions.HTTPError as errh:
-            print("Http Error:", errh.response.text)
             ## Add a step to check if the error is due to throttling and wait until the restriction is lifted
             if 'Request is blocked by the upstream service until:' in errh.response.json()['message']:
                 blockedDatetime = datetime.datetime.strptime(errh.response.json()['message'].split('Request is blocked by the upstream service until: ')[1], '%m/%d/%Y %I:%M:%S %p')
@@ -64,12 +63,13 @@ class fabric_rest():
                 logger.info(f"Sleeping for {sleepDuration} seconds")
                 time.sleep(sleepDuration) # pause until we can make the request again
                 return self.request(method=method, url=url, body=body)
+            raise Exception("Http Error:", errh.response.text)
         except requests.exceptions.ConnectionError as errc:
-            print("Error Connecting:", errc.response.text)
+            raise Exception("Error Connecting:", errc.response.text)
         except requests.exceptions.Timeout as errt:
-            print("Timeout Error:", errt.response.text)
+            raise Exception("Timeout Error:", errt.response.text)
         except requests.exceptions.RequestException as err:
-            print(response.status_code)
+            raise Exception(response.status_code)
             # print("Error", err.response.text)
 
 
