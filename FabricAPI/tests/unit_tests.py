@@ -200,7 +200,7 @@ if __name__ == '__main__':
 
     # print(fr.principal_list_access(principalName='scott@bamsql.com'))
     # print(fr.capacity_list_response())
-    print(fr.capacity_list())
+    # print(fr.capacity_list())
 
     ## TODO
     # print(fr.principal_list(prefix='admin'))
