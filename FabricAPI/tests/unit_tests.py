@@ -1,9 +1,9 @@
 import logging
 import time
 # from FabricAPI import faburest
-# import sys, os
-# SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-# sys.path.append(os.path.dirname(SCRIPT_DIR))
+import sys, os
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(SCRIPT_DIR))
 from faburest import fabric_rest
 
 logger = logging.getLogger(__name__)
@@ -141,7 +141,7 @@ def cleanup_remove_all_workspace(fr:fabric_rest, workspacePrefix:str='API_'):
     # print(workspaceList)
     for workspace in workspaceList:
         print(f'Deleting workspace: \'{workspace["displayName"]}\'')
-        fr.workspace_delete(workspaceName=workspace['displayName'])
+        # fr.workspace_delete(workspaceName=workspace['displayName'])
 #     print('cleanup_remove_all_workspace completed'
 
 
@@ -157,8 +157,17 @@ if __name__ == '__main__':
     import uuid
     workspaceName = f'{workspacePrefix}{uuid.uuid4().hex}'
     print(workspaceName)
-    
-    # fr.workspace_create(workspaceName='API_1', capacityName='fabricbamdemo')
+
+    # print(fr.workspace_list())
+    # print(fr.workspace_get_id(workspaceName='WS_Steve'))
+    definition = fr.notebook_get_item_definition(workspaceName='WS_Audit_All_Activities', notebookName='NB_Faburest')[0] #, type='Notebook')
+    print(fr.base64_decode(definition['definition']['parts'][0]['payload']))
+
+    # print(fr.request(method='get', url='https://api.fabric.microsoft.com/v1/operations/1916279e-7d2e-4964-b397-e8b0c214c86d'))
+
+    # print(fr.capacity_list())
+    # print(fr.capacity_get('fabricbamdemo'))
+    # fr.workspace_create(workspaceName=workspaceName, capacityName='fabricbamdemo')
 
     # cleanup_remove_all_workspace(fr=fr, workspacePrefix=workspacePrefix)
 

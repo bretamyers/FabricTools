@@ -1,4 +1,4 @@
-import requests, json, logging, time, datetime, math
+import requests, json, logging, time, datetime, math, base64
 from typing import Literal, List
 
 logger = logging.getLogger(__name__)
@@ -15,6 +15,14 @@ class fabric_rest():
         return {'Authorization': f'Bearer {token}', 'Content-type': 'application/json'}
 
 
+    def _base64_decode_bytes(self, base64String:str) -> bytes:
+        return base64.b64decode(base64String.encode('utf-8'))
+
+
+    def base64_decode(self, base64String:str) -> str:
+        return self._base64_decode_bytes(base64String).decode('utf-8')
+    
+
     # def request(self, method:str, url:str, body:dict=None) -> requests.Response:
     #     try:
     #         response = requests.request(method=method, url=url, headers=self.header, data=json.dumps(body))
@@ -25,7 +33,6 @@ class fabric_rest():
     #             response = self.response_long_running(response=response)
     #         return response
     #     except requests.exceptions.HTTPError as errh:
-    #         print("Http Error:", errh.response.text)
     #         ## Add a step to check if the error is due to throttling and wait until the restriction is lifted
     #         if 'Request is blocked by the upstream service until:' in errh.response.json()['message']:
     #             blockedDatetime = datetime.datetime.strptime(errh.response.json()['message'].split('Request is blocked by the upstream service until: ')[1], '%m/%d/%Y %I:%M:%S %p')
@@ -33,51 +40,86 @@ class fabric_rest():
     #             logger.info(f"Sleeping for {sleepDuration} seconds")
     #             time.sleep(sleepDuration) # pause until we can make the request again
     #             return self.request(method=method, url=url, body=body)
+    #         raise Exception("Http Error:", errh.response.text)
     #     except requests.exceptions.ConnectionError as errc:
-    #         print("Error Connecting:", errc.response.text)
+    #         raise Exception("Error Connecting:", errc.response.text)
     #     except requests.exceptions.Timeout as errt:
-    #         print("Timeout Error:", errt.response.text)
+    #         raise Exception("Timeout Error:", errt.response.text)
     #     except requests.exceptions.RequestException as err:
-    #         print(response.status_code)
+    #         raise Exception(response.status_code)
     #         # print("Error", err.response.text)
 
-    def request(self, method:str, url:str, body:dict=None, responseList:list=[]) -> List[requests.Response]:
-        try:
-            response = requests.request(method=method, url=url, headers=self.header, data=json.dumps(body))
-            logger.debug(response.json())
-            response.raise_for_status()
-            logger.debug(f"Response - {response.status_code}")
-            if response.status_code == 202:
-                response = self.response_long_running(response=response)
+
+    # def request(self, method:str, url:str, body:dict=None, responseList:list=[]) -> List[requests.Response]:
+    #     try:
+    #         response = requests.request(method=method, url=url, headers=self.header, data=json.dumps(body))
+    #         logger.debug(response.json())
+    #         response.raise_for_status()
+    #         logger.debug(f"Response - {response.status_code}")
+    #         if response.status_code == 202:
+    #             response = self.response_long_running(response=response)
             
-            responseList.append(response)
-            # if response.json().get('continuationUri') != "None" and response.json().get('continuationToken') != "None":
-            if response.json().get('continuationUri') is not None and response.json().get('continuationToken') is not None:
-                response = self.request(method='get', url=f'{response.json().get("continuationUri")}', responseList=responseList)
-            return self.response_parse(responseList)
-        except requests.exceptions.HTTPError as errh:
-            ## Add a step to check if the error is due to throttling and wait until the restriction is lifted
-            if 'Request is blocked by the upstream service until:' in errh.response.json()['message']:
-                blockedDatetime = datetime.datetime.strptime(errh.response.json()['message'].split('Request is blocked by the upstream service until: ')[1], '%m/%d/%Y %I:%M:%S %p')
-                sleepDuration = math.ceil((blockedDatetime - datetime.datetime.now(datetime.UTC).replace(tzinfo=None)).total_seconds())
-                logger.info(f"Sleeping for {sleepDuration} seconds")
-                time.sleep(sleepDuration) # pause until we can make the request again
-                return self.request(method=method, url=url, body=body)
-            raise Exception("Http Error:", errh.response.text)
-        except requests.exceptions.ConnectionError as errc:
-            raise Exception("Error Connecting:", errc.response.text)
-        except requests.exceptions.Timeout as errt:
-            raise Exception("Timeout Error:", errt.response.text)
-        except requests.exceptions.RequestException as err:
-            raise Exception(response.status_code)
-            # print("Error", err.response.text)
+    #         responseList.append(response)
+    #         if response.json().get('continuationUri') is not None and response.json().get('continuationToken') is not None:
+    #             response = self.request(method='get', url=f'{response.json().get("continuationUri")}', responseList=responseList)
+    #         return responseList
+    #     except requests.exceptions.HTTPError as errh:
+    #         ## Add a step to check if the error is due to throttling and wait until the restriction is lifted
+    #         if 'Request is blocked by the upstream service until:' in errh.response.json()['message']:
+    #             blockedDatetime = datetime.datetime.strptime(errh.response.json()['message'].split('Request is blocked by the upstream service until: ')[1], '%m/%d/%Y %I:%M:%S %p')
+    #             sleepDuration = math.ceil((blockedDatetime - datetime.datetime.now(datetime.UTC).replace(tzinfo=None)).total_seconds())
+    #             logger.info(f"Sleeping for {sleepDuration} seconds")
+    #             time.sleep(sleepDuration) # pause until we can make the request again
+    #             return self.request(method=method, url=url, body=body)
+    #         raise Exception("Http Error:", errh.response.text)
+    #     except requests.exceptions.ConnectionError as errc:
+    #         raise Exception("Error Connecting:", errc.response.text)
+    #     except requests.exceptions.Timeout as errt:
+    #         raise Exception("Timeout Error:", errt.response.text)
+    #     except requests.exceptions.RequestException as err:
+    #         raise Exception(response.status_code)
+    #         # print("Error", err.response.text)
+
+    def request(self, method:str, url:str, body:dict=None) -> List[requests.Response]:
+        responseList = []
+        def make_request(method:str, url:str, body:dict=None):
+            try:
+                response = requests.request(method=method, url=url, headers=self.header, data=json.dumps(body))
+                logger.debug(response.json())
+                response.raise_for_status()
+                logger.debug(f"Response - {response.status_code}")
+                if response.status_code == 202:
+                    response = self.response_long_running(response=response)
+                
+                responseList.append(response)
+                if response.json().get('continuationUri') is not None and response.json().get('continuationToken') is not None:
+                    response = self.request(method='get', url=f'{response.json().get("continuationUri")}', responseList=responseList)
+            except requests.exceptions.HTTPError as errh:
+                ## Add a step to check if the error is due to throttling and wait until the restriction is lifted
+                if 'Request is blocked by the upstream service until:' in errh.response.json()['message']:
+                    blockedDatetime = datetime.datetime.strptime(errh.response.json()['message'].split('Request is blocked by the upstream service until: ')[1], '%m/%d/%Y %I:%M:%S %p')
+                    sleepDuration = math.ceil((blockedDatetime - datetime.datetime.now(datetime.UTC).replace(tzinfo=None)).total_seconds())
+                    logger.info(f"Sleeping for {sleepDuration} seconds")
+                    time.sleep(sleepDuration) # pause until we can make the request again
+                    return self.request(method=method, url=url, body=body)
+                raise Exception("Http Error:", errh.response.text)
+            except requests.exceptions.ConnectionError as errc:
+                raise Exception("Error Connecting:", errc.response.text)
+            except requests.exceptions.Timeout as errt:
+                raise Exception("Timeout Error:", errt.response.text)
+            except requests.exceptions.RequestException as err:
+                raise Exception(response.status_code)
+                # print("Error", err.response.text)
+                
+        make_request(method=method, url=url, body=body)
+        return responseList
 
 
     def response_long_running(self, response:requests.Response) -> requests.Response:
         responseLocation = response.headers.get('Location')
         # Will pause 5 unique times before failing
         for _ in range(5):
-            responseStatus = self.request(method='get', url=responseLocation)
+            responseStatus = self.request(method='get', url=responseLocation)[0] # Just get the first item in the list because it should only have one item.
             if responseStatus.json().get('status') != 'Succeeded':
                 logger.info(f'Operation {response.headers.get("x-ms-operation-id")} is not ready. Waiting for {response.headers.get("Retry-After")} seconds.')
                 time.sleep(int(response.headers.get('Retry-After')))
@@ -88,7 +130,7 @@ class fabric_rest():
                 else:
                     logger.info('Payload is ready. Requesting the result.')
                     # responseResult = self.request(method='get', url=f'{responseLocation}/result')
-                    responseResult = self.request(method='get', url=responseStatus.headers.get('Location'))
+                    responseResult = self.request(method='get', url=responseStatus.headers.get('Location'))[0] # Just get the first item in the list because it should only have one item.
                     return responseResult
                 
 
@@ -98,14 +140,13 @@ class fabric_rest():
     
 
     def response_list_unravel(self, responseList:List[requests.Response], param:str='value') -> list:
-        # responseUnraveled = [response for responseItem in responseList for response in responseItem.get(param)]
         responseUnraveled = []
-        for responseItem in responseList:
+        for responseItem in self.response_parse(responseList):
             if responseItem.get(param) is not None:
                 for response in responseItem.get(param):
                     responseUnraveled.append(response)
             else:
-                responseUnraveled.append(responseItem.get(param))
+                responseUnraveled.append(responseItem)
         return responseUnraveled
     
 
@@ -122,12 +163,11 @@ class fabric_rest():
     
 
     def capacity_list(self) -> list:
-        capacityList = [capacityItem for capacityItemList in self.capacity_list_response() for capacityItem in capacityItemList.get('value')]
+        capacityList = self.response_list_unravel(responseList=self.capacity_list_response(), param='value')
         return capacityList
     
 
     def capacity_get(self, capacityName:str) -> dict:
-        # capacity = [capacity for capacity in self.capacity_list() if capacity.get('configuration').get('displayName') == capacityName][0]
         capacity = [capacity for capacity in self.capacity_list() if capacity.get('displayName') == capacityName][0]
         return capacity
     
@@ -404,7 +444,8 @@ class fabric_rest():
 
     def item_list(self, workspaceName:str, itemType:Literal['Dashboard', 'DataPipeline', 'Datamart', 'Eventstream', 'KQLDataConnection', 'KQLDatabase', 'KQLQueryset', 'Lakehouse', 'MLExperiment', 'MLModel', 'MirroredWarehouse', 'Notebook', 'PaginatedReport', 'Report', 'SQLEndpoint', 'SemanticModel', 'SparkJobDefinition', 'Warehouse']=None) -> list:
         item_get_response = self.item_get_response(workspaceName=workspaceName, itemType=itemType)
-        item_list = item_get_response.json().get('value')
+        # item_list = item_get_response.json().get('value')
+        item_list = self.response_list_unravel(item_get_response, param='value')
         return item_list
 
 
@@ -432,7 +473,7 @@ class fabric_rest():
     
 
     def item_get_definition(self, workspaceName:str, itemName:str, itemType:str='', format=None) -> dict:
-        response = self.item_get_definition_response(workspaceName=workspaceName, itemName=itemName, itemType=itemType).json()
+        response = self.response_list_unravel(self.item_get_definition_response(workspaceName=workspaceName, itemName=itemName, itemType=itemType), param=None)
         return response
     
 
