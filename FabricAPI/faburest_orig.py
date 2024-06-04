@@ -54,7 +54,7 @@ class fabric_rest():
             # if response.json().get('continuationUri') != "None" and response.json().get('continuationToken') != "None":
             if response.json().get('continuationUri') is not None and response.json().get('continuationToken') is not None:
                 response = self.request(method='get', url=f'{response.json().get("continuationUri")}', responseList=responseList)
-            return self.response_parse(responseList)
+            return responseList
         except requests.exceptions.HTTPError as errh:
             print("Http Error:", errh.response.text)
             ## Add a step to check if the error is due to throttling and wait until the restriction is lifted
@@ -82,6 +82,7 @@ class fabric_rest():
                 logger.info(f'Operation {response.headers.get("x-ms-operation-id")} is not ready. Waiting for {response.headers.get("Retry-After")} seconds.')
                 time.sleep(int(response.headers.get('Retry-After')))
             else:
+                print(f'{responseStatus.headers=}')
                 if responseStatus.headers.get('Location') is None:
                     logger.info('Long running operation has completed. No result to be returned')
                     return responseStatus
@@ -97,32 +98,17 @@ class fabric_rest():
         return responseParsed
     
 
-    def response_list_unravel(self, responseList:List[requests.Response], param:str='value') -> list:
-        # responseUnraveled = [response for responseItem in responseList for response in responseItem.get(param)]
-        responseUnraveled = []
-        for responseItem in responseList:
-            if responseItem.get(param) is not None:
-                for response in responseItem.get(param):
-                    responseUnraveled.append(response)
-            else:
-                responseUnraveled.append(responseItem.get(param))
-        return responseUnraveled
-    
-
-    def response_build_parameters(self, **paramaters:dict) -> str:
-        parameterString = '&'.join([f'{k}={v}' for k,v in paramaters.items() if v is not None])
-        responseParameterString = f'?{parameterString}' if parameterString != '' else ''
-        return responseParameterString
-
-
     # https://learn.microsoft.com/en-us/rest/api/power-bi/capacities/get-capacities
     def capacity_list_response(self) -> requests.Response:
+        # response = self.request(method='get', url='https://wabi-west-us3-a-primary-redirect.analysis.windows.net/capacities/listbyrollouts')
+        # response = self.request(method='get', url='https://api.powerbi.com/v1.0/myorg/capacities')
         response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/capacities')
         return response
     
 
     def capacity_list(self) -> list:
-        capacityList = [capacityItem for capacityItemList in self.capacity_list_response() for capacityItem in capacityItemList.get('value')]
+        # capacityList = self.capacity_list_response().json().get('capacitiesMetadata')
+        capacityList = self.capacity_list_response().json().get('value')
         return capacityList
     
 
@@ -141,7 +127,7 @@ class fabric_rest():
     
 
     def principal_list(self, prefix:str='') -> requests.Response:
-        response = self.principal_list_response(prefix)
+        response = self.principal_list_response(prefix).json()
         return response
     
 
@@ -160,16 +146,15 @@ class fabric_rest():
         return principalAccess
 
 
-    def workspace_list_response(self, capacity:str=None, name:str=None, state:str=None, type:str=None) -> List[requests.Response]:
+    def workspace_list_response(self) -> requests.Response:
         logger.info('workspace_list_response')
-        url = f'https://api.fabric.microsoft.com/v1/workspaces{self.response_build_parameters(capacity=capacity, name=name, state=state, type=type)}'
-        response = self.request(method='get', url=url)
+        response = self.request(method='get', url='https://api.fabric.microsoft.com/v1/workspaces')
         return response
     
 
-    def workspace_list(self, capacity:str=None, name:str=None, state:str=None, type:str=None) -> list:
+    def workspace_list(self) -> list:
         logger.info('workspace_list')
-        workspaceList = self.response_list_unravel(responseList=self.workspace_list_response(capacity=capacity, name=name, state=state, type=type), param='value')
+        workspaceList = self.workspace_list_response().json().get('value')
         return workspaceList
 
 
@@ -185,9 +170,8 @@ class fabric_rest():
 
 
     def workspace_create(self, workspaceName:str, capacityName:str, description:str=None) -> dict:
-        # response = [response for response in self.workspace_create_response(workspaceName=workspaceName, capacityName=capacityName, description=description)]
-        response = self.response_list_unravel(self.workspace_create_response(workspaceName=workspaceName, capacityName=capacityName, description=description), param='value')
-        return response
+        response = self.workspace_create_response(workspaceName=workspaceName, capacityName=capacityName, description=description)
+        return response.json()
     
 
     def workspace_delete(self, workspaceName:str) -> requests.Response:
@@ -209,6 +193,7 @@ class fabric_rest():
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
         principal = {'id': self.principal_get_id(principalName=principalName), "type": "User"}
         body = {'principal': principal, 'role': role}
+        print(body)
         response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/roleAssignments', body=body)
         return response
     

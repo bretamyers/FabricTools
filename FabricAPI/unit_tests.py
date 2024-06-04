@@ -133,7 +133,14 @@ def unit_test_sqlendpoint(fr:fabric_rest):
     print(fr.item_list(workspaceName='WS_Steve', itemType='SqlEndpoint'))
     fr.item_list(workspaceName='WS_Steve', itemType=None)
     fr.item_list(workspaceName='WS_Steve')
-    
+
+
+def cleanup_remove_all_workspace(fr:fabric_rest):
+    workspaceList = fr.workspace_list(state='Active') #name='WS_042024')
+    print(workspaceList)
+#     for workspace in workspaceList:
+#         fr.workspace_delete(workspaceName=workspace['name'])
+#     print('cleanup_remove_all_workspace completed'
 
 
 if __name__ == '__main__':
@@ -144,6 +151,11 @@ if __name__ == '__main__':
 
     fr = fabric_rest()
 
+    cleanup_remove_all_workspace(fr=fr)
+    # print(fr.response_build_parameters(workspace='steve', param1=None, test='adf'))
+    # print(f'www.microsoft.com{fr.response_build_parameters(workspace="steve", param1='test')}')
+
+
     # unit_test_lakehouse(fr=fr)
 
     # unit_test_sqlendpoint(fr=fr)
@@ -151,14 +163,25 @@ if __name__ == '__main__':
     # print(fr.item_get_object(workspaceName='WS_Steve', itemName='Notebook 3'))
 
     ## Domains
-    # print(fr.domain_list_response().json())
-    print(fr.domain_list())
-    print(fr.domain_get(domainName='Sales'))
-    print(fr.domain_list_workspaces(domainName='Sales'))
-    # print(fr.domain_create(domainName='Test from API 2'))
-    # print(fr.domain_delete(domainName='Test from API 2'))
-    print(fr.principal_list(prefix='admin'))
+    # # print(fr.domain_list_response().json())
+    # print(fr.domain_list())
+    # print(fr.domain_get(domainName='Sales'))
+    # print(fr.domain_list_workspaces(domainName='Sales'))
+    # # print(fr.domain_create(domainName='Test from API 2'))
+    # # print(fr.domain_delete(domainName='Test from API 2'))
+    # print(fr.principal_list(prefix='admin'))
 
+
+    # print(fr.principal_list_access(principalName='scott@bamsql.com'))
+    # print(fr.capacity_list_response())
+    # print(fr.capacity_list())
+
+    ## TODO
+    # print(fr.principal_list(prefix='admin'))
+
+    # print(fr.workspace_list())
+    # print(fr.workspace_create(workspaceName='API_NEW_5', capacityName='fabricbamdemo'))
+          
 
     # print(fr.capacity_list())
     # print(fr.domain_assign_capacity(domainName='Test from API 2', capacityName='fabricbamdemo'))
