@@ -3,7 +3,7 @@ from azure.identity import InteractiveBrowserCredential
 import os
 
 
-CACHE_FILE = '_cache_token.json'
+CACHE_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), '_cache_token.json')
 
 
 def _get_token_cached(audience:str="Fabric") -> str:
