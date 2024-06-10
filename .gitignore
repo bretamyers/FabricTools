@@ -7,3 +7,4 @@ FabricAPI/test.py
 FabricAPI/v2/__pycache__
 FabricAPI/v2/temp.py
 FabricAPI/_cache_token.json
+FabricAPI/LoggingTesting/*

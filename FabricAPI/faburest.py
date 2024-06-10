@@ -2,7 +2,7 @@ import requests, json, logging, time, datetime, math, base64
 from typing import Literal, List
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+# logger.setLevel(logging.INFO)
 
 class fabric_rest():
     def __init__(self, audience:str='pbi'):
@@ -814,3 +814,30 @@ class fabric_rest():
         response = self.request(method='patch', url=f'https://api.fabric.microsoft.com/v1/admin/domains/{domainId}', body=body)
         return response
     
+
+    def warehouse_list_response(self, workspaceName:str) -> requests.Response:
+        warehouseResponse = self.item_get_response(workspaceName=workspaceName, itemType='Warehouse')
+        return warehouseResponse
+    
+    
+    def warehouse_list(self, workspaceName:str) -> requests.Response:
+        logger.info(f'warehouse_list: {workspaceName=}')
+        warehouseResponse = self.response_list_unravel(self.warehouse_list_response(workspaceName=workspaceName), param='value')
+        return warehouseResponse
+    
+    # ## Feature is not available yet. 6/10/2024
+    # def warehouse_get_definition(self, workspaceName:str, warehouseName:str) -> requests.Response:
+    #     warehouseResponse = self.item_get_definition(workspaceName=workspaceName, itemName=warehouseName, itemType='Warehouse')
+    #     return warehouseResponse
+
+    def warehouse_create_response(self, workspaceName:str, warehouseName:str) -> requests.Response:
+        logger.info(f'warehouse_create_response: {workspaceName=}, {warehouseName=}')
+        warehouseResponse = self.item_create(workspaceName=workspaceName, itemName=warehouseName, itemType='Warehouse')
+        return warehouseResponse
+    
+    
+    # def warehouse_create(self, workspaceName:str, warehouseName:str):
+    #     warehouseResponse = self.warehouse_create_response(workspaceName=workspaceName, warehouseName=warehouseName)
+    #     return warehouseResponse
+
+
