@@ -1,5 +1,5 @@
 import _restclient
-
+import item
 
 class workspace():
     def __init__(self, header:str=None):
@@ -8,6 +8,10 @@ class workspace():
         else:    
             self.header = header
 
+        self.item = item.item(self.header_fabric)
+
     def get_name(self):
         return 'name'
+
+    
     

@@ -1,7 +1,6 @@
 
 import workspace
 import pipeline
-import item
 import lakehouse
 import _util, _restclient
 
@@ -12,14 +11,14 @@ class faburest:
         self.header_pbi = _restclient.rest().create_header(audience='pbi')
         self.header_fabric = _restclient.rest().create_header(audience='fabric')
 
-        self.item = item.item(self.header_fabric)
+        # self.item = item.item(self.header_fabric)
         self.workspace = workspace.workspace(self.header_fabric)
         # self.pipeline = pipeline.pipeline(self.header_fabric)
         # self.lakehouse = lakehouse.lakehouse(self.header_fabric)
 
 
-    def get_workspace(self):
-        return self.workspace
+    # def get_workspace(self):
+    #     return self.workspace
     
     
     def download_workspace_artifacts(self, workspaceName:str) -> None:

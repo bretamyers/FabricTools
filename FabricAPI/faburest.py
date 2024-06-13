@@ -1,5 +1,6 @@
 import requests, json, logging, time, datetime, math, base64
 from typing import Literal, List
+import auth
 
 logger = logging.getLogger(__name__)
 # logger.setLevel(logging.INFO)
@@ -7,6 +8,8 @@ logger = logging.getLogger(__name__)
 class fabric_rest():
     def __init__(self, audience:str='pbi'):
         self.header = self.create_header(audience)
+        # credential = auth.Interactive()
+        # self.header_fabric = credential.create_header(credential.get_token_fabric())
 
 
     def create_header(self, audience:str='pbi') -> dict:
@@ -81,9 +84,11 @@ class fabric_rest():
     #         # print("Error", err.response.text)
 
     def request(self, method:str, url:str, body:dict=None) -> List[requests.Response]:
+        logger.info(f'request - {method} - {url} - {body}')
         responseList = []
         def make_request(method:str, url:str, body:dict=None):
             try:
+                # logger.info(f'request.make_request - {method} - {url} - {body}')
                 response = requests.request(method=method, url=url, headers=self.header, data=json.dumps(body))
                 logger.debug(response.json())
                 response.raise_for_status()
@@ -92,7 +97,9 @@ class fabric_rest():
                     response = self.response_long_running(response=response)
                 
                 responseList.append(response)
+                # logger.info(f'make_request - continuationUri: {response.json().get("continuationUri")}')
                 if response.json().get('continuationUri') is not None and response.json().get('continuationToken') is not None:
+                    logger.info(f'ContinuationUri - {response.json().get("continuationUri")}')
                     response = self.request(method='get', url=f'{response.json().get("continuationUri")}', responseList=responseList)
             except requests.exceptions.HTTPError as errh:
                 ## Add a step to check if the error is due to throttling and wait until the restriction is lifted
@@ -101,17 +108,18 @@ class fabric_rest():
                     sleepDuration = math.ceil((blockedDatetime - datetime.datetime.now(datetime.UTC).replace(tzinfo=None)).total_seconds())
                     logger.info(f"Sleeping for {sleepDuration} seconds")
                     time.sleep(sleepDuration) # pause until we can make the request again
-                    return self.request(method=method, url=url, body=body)
+                    #return self.request(method=method, url=url, body=body) # need to look into this. This might be the casuing the error
+                    make_request(method=method, url=url, body=body)
                 raise Exception("Http Error:", errh.response.text)
             except requests.exceptions.ConnectionError as errc:
-                raise Exception("Error Connecting:", errc.response.text)
+                raise Exception("Error Connecting:", errc.response.headers)
             except requests.exceptions.Timeout as errt:
                 raise Exception("Timeout Error:", errt.response.text)
             except requests.exceptions.RequestException as err:
                 raise Exception(response.status_code)
-                # print("Error", err.response.text)
                 
         make_request(method=method, url=url, body=body)
+        logger.info(f'responseList - {responseList}')
         return responseList
 
 
@@ -119,6 +127,8 @@ class fabric_rest():
         responseLocation = response.headers.get('Location')
         # Will pause 5 unique times before failing
         for _ in range(5):
+            # locationResponse = self.request(method='get', url=responseLocation)
+            # logger.info(f'{locationResponse}, {len(locationResponse)}')
             responseStatus = self.request(method='get', url=responseLocation)[0] # Just get the first item in the list because it should only have one item.
             if responseStatus.json().get('status') != 'Succeeded':
                 logger.info(f'Operation {response.headers.get("x-ms-operation-id")} is not ready. Waiting for {response.headers.get("Retry-After")} seconds.')
@@ -262,7 +272,7 @@ class fabric_rest():
 
     # https://learn.microsoft.com/en-us/rest/api/fabric/admin/workspaces/list-workspaces?tabs=HTTP
     def workspace_get_id(self, workspaceName:str) -> str:
-        logger.info('workspace_get_id')
+        logger.info(f'workspace_get_id: {workspaceName=}')
         workspaceId = [workspace.get('id') for workspace in self.workspace_list() if workspace.get('displayName') == workspaceName][0]
         return workspaceId
     
@@ -434,7 +444,7 @@ class fabric_rest():
     
 
     # https://learn.microsoft.com/en-us/rest/api/fabric/admin/items/list-items?tabs=HTTP
-    def item_get_response(self, workspaceName:str, itemType:Literal['Dashboard', 'DataPipeline', 'Datamart', 'Eventstream', 'KQLDataConnection', 'KQLDatabase', 'KQLQueryset', 'Lakehouse', 'MLExperiment', 'MLModel', 'MirroredWarehouse', 'Notebook', 'PaginatedReport', 'Report', 'SQLEndpoint', 'SemanticModel', 'SparkJobDefinition', 'Warehouse']=None) -> requests.Response:
+    def item_get_response(self, workspaceName:str, itemType:Literal['Dashboard', 'DataPipeline', 'Datamart', 'Eventstream', 'KQLDataConnection', 'KQLDatabase', 'KQLQueryset', 'Lakehouse', 'MLExperiment', 'MLModel', 'MirroredWarehouse', 'Notebook', 'PaginatedReport', 'Report', 'SQLEndpoint', 'SemanticModel', 'SparkJobDefinition', 'Warehouse']=None) -> List[requests.Response]:
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
         # itemTypeFilter = f'type={itemType}' if itemType else ''
         # response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items?{itemTypeFilter}')
@@ -472,7 +482,7 @@ class fabric_rest():
     
 
     def item_get_definition(self, workspaceName:str, itemName:str, itemType:str='', format=None) -> dict:
-        response = self.response_list_unravel(self.item_get_definition_response(workspaceName=workspaceName, itemName=itemName, itemType=itemType), param=None)
+        response = self.response_list_unravel(self.item_get_definition_response(workspaceName=workspaceName, itemName=itemName, itemType=itemType), param=None)[0]
         return response
     
 
@@ -482,6 +492,7 @@ class fabric_rest():
 
 
     def item_create(self, workspaceName:str, itemName:str, itemType:str, itemDefinition:dict=None) -> requests.Response:
+        logger.info(f'item_create - {workspaceName=}:{itemName=}:{itemType=}')
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
         body = {"displayName": itemName
                 ,"type": itemType
@@ -496,8 +507,7 @@ class fabric_rest():
     def item_delete(self, workspaceName:str, itemName:str):
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
         itemId = self.item_get_id(workspaceName=workspaceName, itemName=itemName)
-        # logger.info(f'item_delete - {workspaceName=}:{workspaceId=} - {itemName=}:{itemId}')
-        url = f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}'
+        logger.info(f'item_delete - {workspaceName=}:{workspaceId=} - {itemName=}:{itemId}')
         response = self.request(method='delete', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}')
         return response
 
@@ -815,12 +825,12 @@ class fabric_rest():
         return response
     
 
-    def warehouse_list_response(self, workspaceName:str) -> requests.Response:
+    def warehouse_list_response(self, workspaceName:str) -> List[requests.Response]:
         warehouseResponse = self.item_get_response(workspaceName=workspaceName, itemType='Warehouse')
         return warehouseResponse
     
     
-    def warehouse_list(self, workspaceName:str) -> requests.Response:
+    def warehouse_list(self, workspaceName:str) -> List:
         logger.info(f'warehouse_list: {workspaceName=}')
         warehouseResponse = self.response_list_unravel(self.warehouse_list_response(workspaceName=workspaceName), param='value')
         return warehouseResponse
@@ -836,8 +846,89 @@ class fabric_rest():
         return warehouseResponse
     
     
-    # def warehouse_create(self, workspaceName:str, warehouseName:str):
-    #     warehouseResponse = self.warehouse_create_response(workspaceName=workspaceName, warehouseName=warehouseName)
-    #     return warehouseResponse
+    def warehouse_create(self, workspaceName:str, warehouseName:str):
+        warehouseResponse = self.warehouse_create_response(workspaceName=workspaceName, warehouseName=warehouseName)[0].json()
+        return warehouseResponse
 
+
+    ## Does not work yet (6/10/2024). "errorCode":"BadRequest","message":"Target entity does not support the required operation"
+    def warehouse_delete_response(self, workspaceName:str, warehouseName:str):
+        logger.info(f'warehouse_delete_response: {workspaceName=}, {warehouseName=}')
+        # warehouseResponse = self.item_delete(workspaceName=workspaceName, itemName=warehouseName)
+        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
+        warehouseId = self.item_get_id(workspaceName=workspaceName, itemName=warehouseName)
+        # response = self.request(method='delete', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/warehouses/{warehouseId}')
+        # return response
+        raise NotImplementedError('Is not supported yet')
+        
+
+    # Does not work yet (6/10/2024). "Operation not supported for requested item"
+    def warehouse_update_response(self, workspaceName:str, warehouseName:str, warehouseNameNew:str=None, warehouseDescription:str=None) -> requests.Response:
+        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
+        warehouseId = self.item_get_id(workspaceName=workspaceName, itemName=warehouseName)
+        body = {k:v for k,v in 
+                    {'displayName':warehouseNameNew
+                     ,'description': warehouseDescription
+                    }.items() if v != ''
+                }
+        # response = self.item_update_metadata(workspaceName=workspaceName, itemName=warehouseName, body=body)
+        url = f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/warehouses/{warehouseId}'
+        logger.info(f'warehouse_create_response: {workspaceName=}, {warehouseName=}, {url=}, {body=}')
+        # response = self.request(method='patch', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/warehouses/{warehouseId}', body=body)
+        # return response
+        raise NotImplementedError('Is not supported yet')
+
+
+    def deployment_pipelines_list_response(self) -> List[requests.Response]:
+        logger.info(f'deployment_pipelines_list_response')
+        response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/deploymentPipelines')
+        return response
+    
+    
+    def deployment_pipelines_list(self) -> List[requests.Response]:
+        logger.info(f'deployment_pipelines_list')
+        response = self.response_list_unravel(self.deployment_pipelines_list_response(), param='value')
+        return response
+    
+
+    def deployment_pipelines_get_id(self, deploymentPipelineName:str) -> str:
+        deploymentPipelineId = [deploymentPipeline.get('id') for deploymentPipeline in self.deployment_pipelines_list() if deploymentPipeline.get('displayName') == deploymentPipelineName][0]
+        return deploymentPipelineId
+    
+
+    def deployment_pipelines_list_stages_response(self, deploymentPipelineName:str) -> List[requests.Response]:
+        logger.info(f'deployment_pipelines_list_stages_response: {deploymentPipelineName=}')
+        deploymentPipelineId = self.deployment_pipelines_get_id(deploymentPipelineName=deploymentPipelineName)
+        response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/deploymentPipelines/{deploymentPipelineId}/stages')
+        return response
+
+    
+    def deployment_pipelines_list_stages(self, deploymentPipelineName:str) -> list:
+        logger.info(f'deployment_pipelines_list_stages: {deploymentPipelineName=}')
+        response = self.response_list_unravel(self.deployment_pipelines_list_stages_response(deploymentPipelineName=deploymentPipelineName), param='value')
+        return response
+
+
+    def deployment_pipelines_get_stage_id(self, deploymentPipelineName:str, deploymentPipelineStageName) -> str:
+        deploymentPipelineStageId = [deploymentPipelineStage.get('id') for deploymentPipelineStage in self.deployment_pipelines_list_stages(deploymentPipelineName=deploymentPipelineName) if deploymentPipelineStage.get('displayName') == deploymentPipelineStageName][0]
+        return deploymentPipelineStageId
+    
+
+    def deployment_pipelines_deploy_stage_response(self, deploymentPipelineName:str, sourceStageName:str, targetStageName:str) -> List[requests.Response]:
+        logger.info(f'deployment_pipelines_deploy_stage_response: {deploymentPipelineName=}, {sourceStageName=}, {targetStageName=}')
+        deploymentPipelineId = self.deployment_pipelines_get_id(deploymentPipelineName=deploymentPipelineName)
+        sourceStageId = self.deployment_pipelines_get_stage_id(deploymentPipelineName=deploymentPipelineName, deploymentPipelineStageName=sourceStageName) 
+        targetStageId = self.deployment_pipelines_get_stage_id(deploymentPipelineName=deploymentPipelineName, deploymentPipelineStageName=targetStageName)
+        body = {
+            'sourceStageId': sourceStageId
+            ,'targetStageId': targetStageId
+        }
+        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/deploymentPipelines/{deploymentPipelineId}/deploy', body=body)
+        return response
+    
+
+    def deployment_pipelines_deploy_stage(self, deploymentPipelineName:str, sourceStageName:str, targetStageName:str) -> list:
+        logger.info(f'deployment_pipelines_deploy_stage: {deploymentPipelineName=}, {sourceStageName=}, {targetStageName=}')
+        response = self.response_list_unravel(self.deployment_pipelines_deploy_stage_response(deploymentPipelineName=deploymentPipelineName, sourceStageName=sourceStageName, targetStageName=targetStageName), param=None)
+        return response
 
