@@ -100,9 +100,11 @@ class fabric_rest():
                 # logger.info(f'make_request - continuationUri: {response.json().get("continuationUri")}')
                 if response.json().get('continuationUri') is not None and response.json().get('continuationToken') is not None:
                     logger.info(f'ContinuationUri - {response.json().get("continuationUri")}')
-                    response = self.request(method='get', url=f'{response.json().get("continuationUri")}', responseList=responseList)
+                    # response = self.request(method='get', url=f'{response.json().get("continuationUri")}', responseList=responseList)
+                    make_request(method='get', url=f'{response.json().get("continuationUri")}')
             except requests.exceptions.HTTPError as errh:
                 ## Add a step to check if the error is due to throttling and wait until the restriction is lifted
+                # print(f'{errh.response.json()["message"]=}')
                 if 'Request is blocked by the upstream service until:' in errh.response.json()['message']:
                     blockedDatetime = datetime.datetime.strptime(errh.response.json()['message'].split('Request is blocked by the upstream service until: ')[1], '%m/%d/%Y %I:%M:%S %p')
                     sleepDuration = math.ceil((blockedDatetime - datetime.datetime.now(datetime.UTC).replace(tzinfo=None)).total_seconds())
@@ -110,7 +112,8 @@ class fabric_rest():
                     time.sleep(sleepDuration) # pause until we can make the request again
                     #return self.request(method=method, url=url, body=body) # need to look into this. This might be the casuing the error
                     make_request(method=method, url=url, body=body)
-                raise Exception("Http Error:", errh.response.text)
+                else:
+                    raise Exception("Http Error:", errh.response.text)
             except requests.exceptions.ConnectionError as errc:
                 raise Exception("Error Connecting:", errc.response.headers)
             except requests.exceptions.Timeout as errt:
@@ -456,6 +459,14 @@ class fabric_rest():
         item_get_response = self.item_get_response(workspaceName=workspaceName, itemType=itemType)
         item_list = self.response_list_unravel(item_get_response, param='value')
         return item_list
+    
+
+    def item_list_admin(self, workspaceName:str=None, itemType:Literal['Dashboard', 'DataPipeline', 'Datamart', 'Eventstream', 'KQLDataConnection', 'KQLDatabase', 'KQLQueryset', 'Lakehouse', 'MLExperiment', 'MLModel', 'MirroredWarehouse', 'Notebook', 'PaginatedReport', 'Report', 'SQLEndpoint', 'SemanticModel', 'SparkJobDefinition', 'Warehouse']=None
+                        ,) -> list:
+        logger.info(f'item_list_test: {workspaceName=}, {itemType=}')
+        response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/admin/items{self.response_build_parameters(capacity=capacity, name=name, state=state, type=type)}')
+        responseParsed = self.response_list_unravel(response, param='itemEntities')
+        return responseParsed
 
 
     def item_get_object(self, workspaceName:str, itemName:str, itemType:str=None) -> dict:
@@ -932,3 +943,6 @@ class fabric_rest():
         response = self.response_list_unravel(self.deployment_pipelines_deploy_stage_response(deploymentPipelineName=deploymentPipelineName, sourceStageName=sourceStageName, targetStageName=targetStageName), param=None)
         return response
 
+
+    
+    

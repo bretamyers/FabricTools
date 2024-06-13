@@ -18,8 +18,20 @@ if __name__ == '__main__':
    
     print(fr.deployment_pipelines_list())
 
-    print(fr.deployment_pipelines_list_stages(deploymentPipelineName='Fabric Deployment'))
+    # print(fr.deployment_pipelines_list_stages(deploymentPipelineName='Fabric Deployment'))
 
-    # print(fr.deployment_pipelines_deploy_stage_response(deploymentPipelineName='Fabric Deployment', sourceStageName='Development', targetStageName='Test'))
-    print(fr.deployment_pipelines_deploy_stage_response(deploymentPipelineName='Fabric Deployment', sourceStageName='Development', targetStageName='Test')[0].json())
+    deployment = fr.deployment_pipelines_deploy_stage_response(deploymentPipelineName='Fabric Deployment', sourceStageName='Development', targetStageName='Test')
+    print(deployment)
+    print(deployment[0].json())
+
+
+
+    # for _ in fr.item_list_admin():
+    #     print(_)
+
+
+    # Using Databricks today and shortcuting to delta tables.
+    # (1) Data Warehouse, (2) Lakehouse (shortcuts and tables), Pipelines, (3) Semantic Model, Notebooks
+
+
 
