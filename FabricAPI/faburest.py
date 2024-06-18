@@ -33,7 +33,7 @@ class fabric_rest():
     #         response.raise_for_status()
     #         logger.debug(f"Response - {response.status_code}")
     #         if response.status_code == 202:
-    #             response = self.response_long_running(response=response)
+    #             response = self._response_long_running(response=response)
     #         return response
     #     except requests.exceptions.HTTPError as errh:
     #         ## Add a step to check if the error is due to throttling and wait until the restriction is lifted
@@ -60,7 +60,7 @@ class fabric_rest():
     #         response.raise_for_status()
     #         logger.debug(f"Response - {response.status_code}")
     #         if response.status_code == 202:
-    #             response = self.response_long_running(response=response)
+    #             response = self._response_long_running(response=response)
             
     #         responseList.append(response)
     #         if response.json().get('continuationUri') is not None and response.json().get('continuationToken') is not None:
@@ -94,12 +94,12 @@ class fabric_rest():
                 response.raise_for_status()
                 logger.debug(f"Response - {response.status_code}")
                 if response.status_code == 202:
-                    response = self.response_long_running(response=response)
+                    response = self._response_long_running(response=response)
                 
                 responseList.append(response)
                 # logger.info(f'make_request - continuationUri: {response.json().get("continuationUri")}')
                 if response.json().get('continuationUri') is not None and response.json().get('continuationToken') is not None:
-                    logger.info(f'ContinuationUri - {response.json().get("continuationUri")}')
+                    logger.info(f'continuationUri - {response.json().get("continuationUri")}')
                     # response = self.request(method='get', url=f'{response.json().get("continuationUri")}', responseList=responseList)
                     make_request(method='get', url=f'{response.json().get("continuationUri")}')
             except requests.exceptions.HTTPError as errh:
@@ -108,7 +108,7 @@ class fabric_rest():
                 if 'Request is blocked by the upstream service until:' in errh.response.json()['message']:
                     blockedDatetime = datetime.datetime.strptime(errh.response.json()['message'].split('Request is blocked by the upstream service until: ')[1], '%m/%d/%Y %I:%M:%S %p')
                     sleepDuration = math.ceil((blockedDatetime - datetime.datetime.now(datetime.UTC).replace(tzinfo=None)).total_seconds())
-                    logger.info(f"Sleeping for {sleepDuration} seconds")
+                    logger.info(f"sleeping for {sleepDuration} seconds")
                     time.sleep(sleepDuration) # pause until we can make the request again
                     #return self.request(method=method, url=url, body=body) # need to look into this. This might be the casuing the error
                     make_request(method=method, url=url, body=body)
@@ -126,7 +126,7 @@ class fabric_rest():
         return responseList
 
 
-    def response_long_running(self, response:requests.Response) -> requests.Response:
+    def _response_long_running(self, response:requests.Response) -> requests.Response:
         responseLocation = response.headers.get('Location')
         # Will pause 5 unique times before failing
         for _ in range(5):
@@ -461,11 +461,17 @@ class fabric_rest():
         return item_list
     
 
+    def item_list_admin_response(self, workspaceName:str=None, itemType:Literal['Dashboard', 'DataPipeline', 'Datamart', 'Eventstream', 'KQLDataConnection', 'KQLDatabase', 'KQLQueryset', 'Lakehouse', 'MLExperiment', 'MLModel', 'MirroredWarehouse', 'Notebook', 'PaginatedReport', 'Report', 'SQLEndpoint', 'SemanticModel', 'SparkJobDefinition', 'Warehouse']=None
+                        ,capacity:str=None, state:str=None, type:str=None, workspaceId:str=None) -> list:
+        logger.info(f'item_list_admin_response: {workspaceName=}, {itemType=}')
+        response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/admin/items{self.response_build_parameters(capacity=capacity, state=state, type=type, workspaceId=workspaceId)}')
+        return response
+    
+
     def item_list_admin(self, workspaceName:str=None, itemType:Literal['Dashboard', 'DataPipeline', 'Datamart', 'Eventstream', 'KQLDataConnection', 'KQLDatabase', 'KQLQueryset', 'Lakehouse', 'MLExperiment', 'MLModel', 'MirroredWarehouse', 'Notebook', 'PaginatedReport', 'Report', 'SQLEndpoint', 'SemanticModel', 'SparkJobDefinition', 'Warehouse']=None
-                        ,) -> list:
-        logger.info(f'item_list_test: {workspaceName=}, {itemType=}')
-        response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/admin/items{self.response_build_parameters(capacity=capacity, name=name, state=state, type=type)}')
-        responseParsed = self.response_list_unravel(response, param='itemEntities')
+                        ,capacity:str=None, state:str=None, type:str=None, workspaceId:str=None) -> list:
+        logger.info(f'item_list_admin: {workspaceName=}, {itemType=}')
+        responseParsed = self.response_list_unravel(self.item_list_admin_response(workspaceName=workspaceName, itemType=itemType, capacity=capacity, state=state, type=type, workspaceId=workspaceId), param='itemEntities')
         return responseParsed
 
 
@@ -652,6 +658,12 @@ class fabric_rest():
 
     def lakehouse_list_response(self, workspaceName:str) -> requests.Response:
         lakehouseResponse = self.item_get_response(workspaceName=workspaceName, itemType='Lakehouse')
+        return lakehouseResponse
+    
+
+    def lakehouse_list(self, workspaceName:str) -> requests.Response:
+        logger.info(f'lakehouse_list: {workspaceName=}')
+        lakehouseResponse = self.response_list_unravel(self.lakehouse_list_response(workspaceName=workspaceName), param='value')
         return lakehouseResponse
     
 

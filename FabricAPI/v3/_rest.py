@@ -44,7 +44,7 @@ class FabricRestResponse():
                 response.raise_for_status()
                 logger.debug(f"Response - {response.status_code}")
                 if response.status_code == 202:
-                    response = self.response_long_running(response=response)
+                    response = self._response_long_running(response=response)
                 
                 responseList.append(response)
                 # logger.info(f'make_request - continuationUri: {response.json().get("continuationUri")}')
@@ -76,7 +76,7 @@ class FabricRestResponse():
         return responseList
 
 
-    def response_long_running(self, response:requests.Response) -> requests.Response:
+    def _response_long_running(self, response:requests.Response) -> requests.Response:
         responseLocation = response.headers.get('Location')
         # Will pause 5 unique times before failing
         for _ in range(5):

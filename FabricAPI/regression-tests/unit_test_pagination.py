@@ -44,12 +44,43 @@ if __name__ == '__main__':
 
     # print(len(fr.item_get_response(workspaceName='WS_Audit_All_Activities')))
 
-    startLen = len(fr.item_list(workspaceName='WS_Audit_All_Activities'))
-    print(f'{startLen=}')
 
-    workspaceItemList = fr.item_list(workspaceName='WS_Audit_All_Activities')
-    # print(workspaceList)
-    print(len(workspaceItemList))
+    # startLen = len(fr.item_list(workspaceName='WS_Audit_All_Activities'))
+    # print(f'{startLen=}')
+
+    # workspaceItemList = fr.item_list(workspaceName='WS_Audit_All_Activities')
+    # # print(workspaceList)
+    # print(len(workspaceItemList))
+
+
+    # itemList = fr.item_list_admin()
+    # # print(workspaceList)
+    # print(len(itemList))
+    # print(itemList)
+
+
+    import json
+    itemList = fr.capacity_list()
+    print(json.dumps(itemList, indent=2))
+
+    # # print(json.dumps(fr.warehouse_list(workspaceName='WS_Demo_InternetSales'), indent=2))
+    # print(json.dumps(fr.lakehouse_list(workspaceName='WS_Demo_InternetSales'), indent=2))
+    # # Database = 7da1ae2b-fe82-4040-b51e-62b8398b6b0d
+    # print(json.dumps(fr.sqlendpoint_list(workspaceName='WS_Demo_InternetSales'), indent=2))
+
+    capacityIdList = set()
+    for workspace in fr.workspace_list():
+        capacityIdList.add(workspace.get('capacityId', None))
+
+    print(capacityIdList)
+    for capacity in capacityIdList:
+        # print(capacity)
+        for cap in itemList:
+            if cap.get('id', '') == capacity:
+                print(cap)
+                
+
+    # print(fr.capacity_get(capac='1d2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p'))
 
 
     ## Using Threading
