@@ -26,63 +26,6 @@ class fabric_rest():
         return self._base64_decode_bytes(base64String).decode('utf-8')
     
 
-    # def request(self, method:str, url:str, body:dict=None) -> requests.Response:
-    #     try:
-    #         response = requests.request(method=method, url=url, headers=self.header, data=json.dumps(body))
-    #         logger.debug(response.json())
-    #         response.raise_for_status()
-    #         logger.debug(f"Response - {response.status_code}")
-    #         if response.status_code == 202:
-    #             response = self._response_long_running(response=response)
-    #         return response
-    #     except requests.exceptions.HTTPError as errh:
-    #         ## Add a step to check if the error is due to throttling and wait until the restriction is lifted
-    #         if 'Request is blocked by the upstream service until:' in errh.response.json()['message']:
-    #             blockedDatetime = datetime.datetime.strptime(errh.response.json()['message'].split('Request is blocked by the upstream service until: ')[1], '%m/%d/%Y %I:%M:%S %p')
-    #             sleepDuration = math.ceil((blockedDatetime - datetime.datetime.now(datetime.UTC).replace(tzinfo=None)).total_seconds())
-    #             logger.info(f"Sleeping for {sleepDuration} seconds")
-    #             time.sleep(sleepDuration) # pause until we can make the request again
-    #             return self.request(method=method, url=url, body=body)
-    #         raise Exception("Http Error:", errh.response.text)
-    #     except requests.exceptions.ConnectionError as errc:
-    #         raise Exception("Error Connecting:", errc.response.text)
-    #     except requests.exceptions.Timeout as errt:
-    #         raise Exception("Timeout Error:", errt.response.text)
-    #     except requests.exceptions.RequestException as err:
-    #         raise Exception(response.status_code)
-    #         # print("Error", err.response.text)
-
-
-    # def request(self, method:str, url:str, body:dict=None, responseList:list=[]) -> List[requests.Response]:
-    #     try:
-    #         response = requests.request(method=method, url=url, headers=self.header, data=json.dumps(body))
-    #         logger.debug(response.json())
-    #         response.raise_for_status()
-    #         logger.debug(f"Response - {response.status_code}")
-    #         if response.status_code == 202:
-    #             response = self._response_long_running(response=response)
-            
-    #         responseList.append(response)
-    #         if response.json().get('continuationUri') is not None and response.json().get('continuationToken') is not None:
-    #             response = self.request(method='get', url=f'{response.json().get("continuationUri")}', responseList=responseList)
-    #         return responseList
-    #     except requests.exceptions.HTTPError as errh:
-    #         ## Add a step to check if the error is due to throttling and wait until the restriction is lifted
-    #         if 'Request is blocked by the upstream service until:' in errh.response.json()['message']:
-    #             blockedDatetime = datetime.datetime.strptime(errh.response.json()['message'].split('Request is blocked by the upstream service until: ')[1], '%m/%d/%Y %I:%M:%S %p')
-    #             sleepDuration = math.ceil((blockedDatetime - datetime.datetime.now(datetime.UTC).replace(tzinfo=None)).total_seconds())
-    #             logger.info(f"Sleeping for {sleepDuration} seconds")
-    #             time.sleep(sleepDuration) # pause until we can make the request again
-    #             return self.request(method=method, url=url, body=body)
-    #         raise Exception("Http Error:", errh.response.text)
-    #     except requests.exceptions.ConnectionError as errc:
-    #         raise Exception("Error Connecting:", errc.response.text)
-    #     except requests.exceptions.Timeout as errt:
-    #         raise Exception("Timeout Error:", errt.response.text)
-    #     except requests.exceptions.RequestException as err:
-    #         raise Exception(response.status_code)
-    #         # print("Error", err.response.text)
-
     def request(self, method:str, url:str, body:dict=None) -> List[requests.Response]:
         logger.info(f'request - {method} - {url} - {body}')
         responseList = []

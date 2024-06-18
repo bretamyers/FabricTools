@@ -1,7 +1,5 @@
 from faburest import fabric_rest
 import logging
-import concurrent.futures
-import random, string, datetime
 
 
 if __name__ == '__main__':
