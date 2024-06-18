@@ -18,11 +18,12 @@ if __name__ == '__main__':
 
     # print(fr.deployment_pipelines_list_stages(deploymentPipelineName='Fabric Deployment'))
 
-    deployment = fr.deployment_pipelines_deploy_stage_response(deploymentPipelineName='Fabric Deployment'
+    deployment = fr.deployment_pipelines_deploy_stage(deploymentPipelineName='Fabric Deployment'
                                                                , sourceStageName='Development'
                                                                , targetStageName='Test')
     print(deployment)
-    print(deployment[0].json())
+    import json
+    print(json.dumps(deployment, indent=2))
 
 
 
