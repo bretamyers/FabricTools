@@ -574,18 +574,19 @@ class fabric_rest():
         return response
 
 
-    def connection_response(self, connectionName:str) -> requests.Response:
-        response = self.request(method='get', url='https://api.powerbi.com/v2.0/myorg/me/gatewayClusterDatasources')
+    def connection_list_response(self) -> List[requests.Response]:
+        response = self.request(method='get', url='https://api.powerbi.com/v2.0/myorg/me/gatewayClusterDatasources?$expand=users')
         return response
 
 
-    def connection_list(self, connectionName:str) -> list:
-        connection_list = self.response_list_unravel(self.connection_response(connectionName=connectionName), param='value')
+    def connection_list(self) -> list:
+        connection_list = self.response_list_unravel(self.connection_list_response(), param='value')
         return connection_list
     
 
     def connection_get_object(self, connectionName:str) -> dict:
-        connectionId = [connection for connection in self.connection_list(connectionName=connectionName) if connection.get('datasourceName') == connectionName][0]
+        connectionList = [connection for connection in self.connection_list() if connection.get('datasourceName') == connectionName]
+        connectionId = connectionList[0] if len(connectionList) > 0 else None
         return connectionId
     
     

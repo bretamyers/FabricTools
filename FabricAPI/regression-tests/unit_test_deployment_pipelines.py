@@ -32,7 +32,10 @@ if __name__ == '__main__':
 
 
     # Using Databricks today and shortcuting to delta tables.
-    # (1) Data Warehouse, (2) Lakehouse (shortcuts and tables), Pipelines, (3) Semantic Model, Notebooks
+    # (1) Data Warehouse
+    # (2) Lakehouse (shortcuts and tables)
+    # Pipelines
+    # (3) Semantic Model, Notebooks
 
 
 

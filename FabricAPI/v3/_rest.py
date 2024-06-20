@@ -26,7 +26,7 @@ class FabricRestResponse():
     def __iter__(self) -> Iterator[int]:
         for response in self._response_list_unravel(self.responseList):
             yield response
-    
+        
 
     def create_header(self, audience:str='pbi') -> dict:
         import _util
@@ -111,7 +111,7 @@ class FabricRestResponse():
             else:
                 responseUnraveled.append(responseItem)
         return responseUnraveled
-    
+
 
     def _response_build_parameters(self, **paramaters:dict) -> str:
         parameterString = '&'.join([f'{k}={v}' for k,v in paramaters.items() if v is not None])
