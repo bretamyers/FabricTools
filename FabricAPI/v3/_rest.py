@@ -23,7 +23,7 @@ class FabricRestResponse():
         return json.dumps(self._response_list_unravel(self.responseList), indent=2)
 
 
-    def __iter__(self) -> Iterator[int]:
+    def __iter__(self) -> Iterator[requests.Response]:
         for response in self._response_list_unravel(self.responseList):
             yield response
         
