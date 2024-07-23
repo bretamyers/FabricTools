@@ -1,8 +1,12 @@
 from azure.identity import InteractiveBrowserCredential, DeviceCodeCredential, DefaultAzureCredential
+from azure.core.credentials import AccessToken
 import base64
 import json
 import datetime
 import logging
+from typing import List, Dict
+import urllib.parse
+
 
 logger = logging.getLogger(__name__)
 # handler = logging.StreamHandler()
@@ -13,9 +17,33 @@ logger = logging.getLogger(__name__)
 
 class Interactive:
     def __init__(self):
-        self.auth = InteractiveBrowserCredential()
-        # self.auth = DeviceCodeCredential()
+        self._cred = InteractiveBrowserCredential()
+        # self.cred = DeviceCodeCredential()
     
+    """
+    Get a token for specified scope
+    """
+    def get_access_tokens(self, scopes:List[str]) -> Dict[str, AccessToken]:
+        logger.info(f'Auth.get_access_tokens')
+        accessTokenDict = dict()
+        resource = self.get_resource_scopes(scopes)
+        for resource, scopes in resource.items():
+            print(resource, scopes, ','.join(scopes))
+            accessToken = self._cred.get_token(','.join(scopes))
+            accessTokenDict[resource] = accessToken
+        return accessTokenDict
+    
+
+    def get_resource_scopes(self, scopes):
+        logger.info(f'Auth.get_audience_scopes')
+        audienceDict = {}
+        for scope in scopes:
+            parsedParts = urllib.parse.urlparse(url=scope)
+            audience = f'{parsedParts.scheme}://{parsedParts.hostname}'
+            audienceDict.setdefault(audience, [])
+            audienceDict[audience].append(scope) if scope not in audienceDict[audience] else None # only add unique values
+        return audienceDict
+
     """
     Get a token for a database scope
     Used to connect to a Fabric Data Wareshouse/Lakehouse SQL endpoint
@@ -24,7 +52,7 @@ class Interactive:
         logger.info(f'Auth.get_token_database')
         # https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.interactivebrowsercredential?view=azure-python
         # https://github.com/microsoft/dbt-fabric/blob/89d59caea97f9e8a7f83486f7964cd18561e0fa9/dbt/adapters/fabric/fabric_connection_manager.py#L28
-        accessToken = self.auth.get_token("https://database.windows.net//.default")
+        accessToken = self._cred.get_token("https://database.windows.net//.default")
         return accessToken.token
 
 
@@ -35,7 +63,7 @@ class Interactive:
     def get_token_storage(self) -> str:
         logger.info(f'Auth.get_token_storage')
         # https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.interactivebrowsercredential?view=azure-python
-        accessToken = self.auth.get_token("https://storage.azure.com/.default")
+        accessToken = self._cred.get_token("https://storage.azure.com/.default")
         return accessToken.token
     
     
@@ -45,7 +73,7 @@ class Interactive:
     """
     def get_token_pbi(self) -> str:
         logger.info(f'Auth.get_token_pbi')
-        accessToken = self.auth.get_token("https://analysis.windows.net/powerbi/api/.default")
+        accessToken = self._cred.get_token("https://analysis.windows.net/powerbi/api/.default")
         return accessToken.token
     
 
@@ -56,7 +84,7 @@ class Interactive:
     """
     def get_token_fabric(self) -> str:
         logger.info(f'Auth.get_token_fabric')
-        accessToken = self.auth.get_token("https://api.fabric.microsoft.com/.default")
+        accessToken = self._cred.get_token("https://api.fabric.microsoft.com/.default")
         return accessToken.token
     
 
@@ -66,7 +94,7 @@ class Interactive:
     """
     def get_token_management(self) -> str:
         logger.info(f'Auth.get_token_management')
-        accessToken = self.auth.get_token("https://management.core.windows.net/.default")
+        accessToken = self._cred.get_token("https://management.core.windows.net/.default")
         return accessToken.token
 
     
@@ -76,7 +104,7 @@ class Interactive:
     """
     def get_token_key_vault(self) -> str:
         logger.info(f'Auth.get_token_key_vault')
-        accessToken = self.auth.get_token("https://vault.azure.net/.default")
+        accessToken = self._cred.get_token("https://vault.azure.net/.default")
         return accessToken.token
     
     

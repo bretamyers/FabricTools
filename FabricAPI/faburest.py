@@ -1,5 +1,5 @@
 import requests, json, logging, time, datetime, math, base64
-from typing import Literal, List
+from typing import Literal, List, Union
 import auth
 
 logger = logging.getLogger(__name__)
@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 class fabric_rest():
     def __init__(self, audience:str='pbi'):
+        self.cred = auth.Interactive()
         self.header = self.create_header(audience)
         # credential = auth.Interactive()
         # self.header_fabric = credential.create_header(credential.get_token_fabric())
@@ -25,6 +26,14 @@ class fabric_rest():
     def base64_decode(self, base64String:str) -> str:
         return self._base64_decode_bytes(base64String).decode('utf-8')
     
+
+    def _base64_encode_bytes(self, string:str) -> bytes:
+        return base64.b64encode(string.encode('utf-8'))
+
+
+    def _base64_encode(self, string:str) -> str:
+        return self._base64_encode_bytes(string).decode('utf-8')
+
 
     def request(self, method:str, url:str, body:dict=None) -> List[requests.Response]:
         logger.info(f'request - {method} - {url} - {body}')
@@ -62,7 +71,7 @@ class fabric_rest():
             except requests.exceptions.Timeout as errt:
                 raise Exception("Timeout Error:", errt.response.text)
             except requests.exceptions.RequestException as err:
-                raise Exception(response.status_code)
+                raise Exception(response.status_code, err)
                 
         make_request(method=method, url=url, body=body)
         logger.info(f'responseList - {responseList}')
@@ -216,6 +225,24 @@ class fabric_rest():
         return response
     
 
+    # https://learn.microsoft.com/en-us/rest/api/fabric/core/workspaces/get-workspace?tabs=HTTP
+    def workspace_get_response(self, workspaceName:str=None, workspaceId:str=None) -> str:
+        logger.info(f'workspace_get_response: {workspaceName=} | {workspaceId=}')
+        if workspaceId is None and workspaceName is not None:
+            workspaceId = [workspace.get('id') for workspace in self.workspace_list() if workspace.get('displayName') == workspaceName][0]
+        elif workspaceName is None and workspaceId is None:
+            raise Exception('Either workspaceName or workspaceId must be provided')
+        logger.info(f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}')
+        response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}')
+        return response
+    
+
+    def workspace_get(self, workspaceName:str=None, workspaceId:str=None) -> str:
+        logger.info(f'workspace_get: {workspaceName=} | {workspaceId=}')
+        response = self.workspace_get_response(workspaceName=workspaceName, workspaceId=workspaceId)[0].json()
+        return response
+    
+
     # https://learn.microsoft.com/en-us/rest/api/fabric/admin/workspaces/list-workspaces?tabs=HTTP
     def workspace_get_id(self, workspaceName:str) -> str:
         logger.info(f'workspace_get_id: {workspaceName=}')
@@ -292,7 +319,7 @@ class fabric_rest():
 
 
     def pipeline_list_response(self, workspaceName:str) -> str:
-        pipelineResponse = self.item_get_response(workspaceName=workspaceName, itemType='DataPipeline')
+        pipelineResponse = self.item_list_response(workspaceName=workspaceName, itemType='DataPipeline')
         return pipelineResponse
     
 
@@ -388,9 +415,30 @@ class fabric_rest():
         response = self.item_delete(workspaceName=workspaceName, itemName=notebookName)
         return response
     
+    # https://learn.microsoft.com/en-us/rest/api/fabric/core/items/get-item?tabs=HTTP
+    def item_get_response(self, workspaceName:str, itemName:str, itemType:Literal['Dashboard', 'DataPipeline', 'Datamart', 'Eventstream', 'KQLDataConnection', 'KQLDatabase', 'KQLQueryset', 'Lakehouse', 'MLExperiment', 'MLModel', 'MirroredWarehouse', 'Notebook', 'PaginatedReport', 'Report', 'SQLEndpoint', 'SemanticModel', 'SparkJobDefinition', 'Warehouse']) -> List[requests.Response]:
+        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
+        itemId = self.item_get_id(workspaceName=workspaceName, itemName=itemName, itemType=itemType)
+        response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}')
+        return response
+    
+    def item_get_by_id_response(self, workspaceName:str, itemId:str) -> List[requests.Response]:
+        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
+        response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}')
+        return response
+    
+    def item_get_by_id(self, workspaceName:str, itemId:str) -> List[requests.Response]:
+        item = self.item_get_by_id_response(workspaceName=workspaceName, itemId=itemId)[0].json()
+        return item
+    
+
+    def item_get(self, workspaceName:str, itemName:str, itemType:Literal['Dashboard', 'DataPipeline', 'Datamart', 'Eventstream', 'KQLDataConnection', 'KQLDatabase', 'KQLQueryset', 'Lakehouse', 'MLExperiment', 'MLModel', 'MirroredWarehouse', 'Notebook', 'PaginatedReport', 'Report', 'SQLEndpoint', 'SemanticModel', 'SparkJobDefinition', 'Warehouse']) -> List[requests.Response]:
+        item_get_response = self.item_get_response(workspaceName=workspaceName, itemName=itemName, itemType=itemType)[0].json()
+        return item_get_response
+    
 
     # https://learn.microsoft.com/en-us/rest/api/fabric/admin/items/list-items?tabs=HTTP
-    def item_get_response(self, workspaceName:str, itemType:Literal['Dashboard', 'DataPipeline', 'Datamart', 'Eventstream', 'KQLDataConnection', 'KQLDatabase', 'KQLQueryset', 'Lakehouse', 'MLExperiment', 'MLModel', 'MirroredWarehouse', 'Notebook', 'PaginatedReport', 'Report', 'SQLEndpoint', 'SemanticModel', 'SparkJobDefinition', 'Warehouse']=None) -> List[requests.Response]:
+    def item_list_response(self, workspaceName:str, itemType:Literal['Dashboard', 'DataPipeline', 'Datamart', 'Eventstream', 'KQLDataConnection', 'KQLDatabase', 'KQLQueryset', 'Lakehouse', 'MLExperiment', 'MLModel', 'MirroredWarehouse', 'Notebook', 'PaginatedReport', 'Report', 'SQLEndpoint', 'SemanticModel', 'SparkJobDefinition', 'Warehouse']=None) -> List[requests.Response]:
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
         # itemTypeFilter = f'type={itemType}' if itemType else ''
         # response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items?{itemTypeFilter}')
@@ -399,8 +447,8 @@ class fabric_rest():
 
 
     def item_list(self, workspaceName:str, itemType:Literal['Dashboard', 'DataPipeline', 'Datamart', 'Eventstream', 'KQLDataConnection', 'KQLDatabase', 'KQLQueryset', 'Lakehouse', 'MLExperiment', 'MLModel', 'MirroredWarehouse', 'Notebook', 'PaginatedReport', 'Report', 'SQLEndpoint', 'SemanticModel', 'SparkJobDefinition', 'Warehouse']=None) -> list:
-        item_get_response = self.item_get_response(workspaceName=workspaceName, itemType=itemType)
-        item_list = self.response_list_unravel(item_get_response, param='value')
+        item_list_response = self.item_list_response(workspaceName=workspaceName, itemType=itemType)
+        item_list = self.response_list_unravel(item_list_response, param='value')
         return item_list
     
 
@@ -417,7 +465,6 @@ class fabric_rest():
         responseParsed = self.response_list_unravel(self.item_list_admin_response(workspaceName=workspaceName, itemType=itemType, capacity=capacity, state=state, type=type, workspaceId=workspaceId), param='itemEntities')
         return responseParsed
 
-
     def item_get_object(self, workspaceName:str, itemName:str, itemType:str=None) -> dict:
         item_list = self.item_list(workspaceName=workspaceName, itemType=itemType)
         try:
@@ -429,7 +476,7 @@ class fabric_rest():
 
     def item_get_id(self, workspaceName:str, itemName:str, itemType:str=None) -> str:
         artifactObject = self.item_get_object(workspaceName=workspaceName, itemName=itemName, itemType=itemType)
-        artifactId = artifactObject.get('id')
+        artifactId = artifactObject.get('id') if artifactObject else None
         return artifactId
 
 
@@ -521,23 +568,40 @@ class fabric_rest():
         return response
 
 
-    def lakehouse_get_shortcut(self, workspaceName:str, itemName:str, shortcutPath:str, shortcutName:str) -> requests.Response:
+    def lakehouse_delete_shortcut_response(self, workspaceName:str, lakehouseName:str, shortcutPath:str, shortcutName:str) -> requests.Response:
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
-        itemId = self.item_get_id(workspaceName=workspaceName, artifactName=itemName)
+        itemId = self.lakehouse_get_id(workspaceName=workspaceName, lakehouseName=lakehouseName)
+        # https://learn.microsoft.com/en-us/rest/api/fabric/core/onelake-shortcuts/delete-shortcut?tabs=HTTP
+        response = self.request(method='delete', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/shortcuts/{shortcutPath}/{shortcutName}')
+        return response
+    
+    def lakehouse_delete_shortcut(self, workspaceName:str, lakehouseName:str, shortcutPath:str, shortcutName:str) -> requests.Response:
+        response = self.lakehouse_delete_shortcut_response(workspaceName=workspaceName, lakehouseName=lakehouseName, shortcutPath=shortcutPath, shortcutName=shortcutName)[0].json()
+        return response
+
+
+    def lakehouse_get_shortcut_response(self, workspaceName:str, lakehouseName:str, shortcutPath:str, shortcutName:str) -> requests.Response:
+        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
+        itemId = self.lakehouse_get_id(workspaceName=workspaceName, lakehouseName=lakehouseName)
         # https://learn.microsoft.com/en-us/rest/api/fabric/core/onelake-shortcuts/get-shortcut?tabs=HTTP
         response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/shortcuts/{shortcutPath}/{shortcutName}')
         return response
     
 
+    def lakehouse_get_shortcut(self, workspaceName:str, lakehouseName:str, shortcutPath:str, shortcutName:str) -> requests.Response:
+        response = self.lakehouse_get_shortcut_response(workspaceName=workspaceName, lakehouseName=lakehouseName, shortcutPath=shortcutPath, shortcutName=shortcutName)[0].json()
+        return response
+    
+
     def _lakehouse_create_shortcut(self, workspaceId:str, itemId:str, body:dict) -> requests.Response:
-        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/shortcuts', body=body)
+        response = self.request(method='post', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/items/{itemId}/shortcuts?shortcutConflictPolicy=GenerateUniqueName', body=body)
         return response
 
 
     # TODO
     def lakehouse_create_shortcut_adls(self, workspaceName:str, itemName:str, shortcutName:str, shortcutPath:str, adlsPath:str, adlsSubPath:str) -> requests.Response:
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
-        itemId = self.item_get_id(workspaceName=workspaceName, artifactName=itemName)
+        itemId = self.item_get_id(workspaceName=workspaceName, itemName=itemName)
         connectionId = '' # TODO
         # https://learn.microsoft.com/en-us/rest/api/fabric/core/onelake-shortcuts/create-shortcut?tabs=HTTP#adlsgen2
         # https://learn.microsoft.com/en-us/rest/api/fabric/core/onelake-shortcuts/create-shortcut?tabs=HTTP#target
@@ -556,23 +620,66 @@ class fabric_rest():
 
 
     # https://learn.microsoft.com/en-us/rest/api/fabric/core/onelake-shortcuts/create-shortcut?tabs=HTTP#create-shortcut-one-lake-target
-    def lakehouse_create_shortcut_onelake(self, workspaceName:str, itemName:str, shortcutName:str, shortcutPath:str, onelakePath:str) -> requests.Response:
-        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
-        itemId = self.lakehouse_get_shortcut(workspaceName=workspaceName, artifactName=itemName)
+    def lakehouse_create_shortcut_onelake(self, workspaceNameSource:str, lakehouseNameSource:str, onelakePathSource:str, workspaceNameTarget:str, lakehouseNameTarget:str, shortcutNameTarget:str, onelakePathTarget:str) -> requests.Response:
+        workspaceIdSource = self.workspace_get_id(workspaceName=workspaceNameSource)
+        itemIdSource = self.lakehouse_get_id(workspaceName=workspaceNameSource, lakehouseName=lakehouseNameSource)
+        workspaceIdTarget = self.workspace_get_id(workspaceName=workspaceNameTarget)
+        itemIdTarget = self.lakehouse_get_id(workspaceName=workspaceNameTarget, lakehouseName=lakehouseNameTarget)
+
         # https://learn.microsoft.com/en-us/rest/api/fabric/core/onelake-shortcuts/create-shortcut?tabs=HTTP
-        body = {"path": shortcutPath,
-                "name": shortcutName,
+        body = {"path": onelakePathTarget,
+                "name": shortcutNameTarget,
                 "target": {
                     "oneLake": {
-                    "workspaceId": workspaceId,
-                    "itemId": itemId,
-                    "path": onelakePath
+                        "workspaceId": workspaceIdSource,
+                        "itemId": itemIdSource,
+                        "path": onelakePathSource
                     }
                 }
             }
-        response = self._lakehouse_create_shortcut(workspaceId=workspaceId, itemId=itemId, body=body)
+        response = self._lakehouse_create_shortcut(workspaceId=workspaceIdTarget, itemId=itemIdTarget, body=body)
         return response
+    
 
+    # def lakehouse_create_shortcut_onelake_table(self, workspaceNameSource:str, lakehouseNameSource:str, onelakePathSource:str, workspaceNameTarget:str, lakehouseNameTarget:str, shortcutNameTarget:str) -> requests.Response:
+    #     workspaceIdSource = self.workspace_get_id(workspaceName=workspaceNameSource)
+    #     itemIdSource = self.lakehouse_get_id(workspaceName=workspaceNameSource, lakehouseName=lakehouseNameSource)
+    #     workspaceIdTarget = self.workspace_get_id(workspaceName=workspaceNameTarget)
+    #     itemIdTarget = self.lakehouse_get_id(workspaceName=workspaceNameTarget, lakehouseName=lakehouseNameTarget)
+    #     # https://learn.microsoft.com/en-us/rest/api/fabric/core/onelake-shortcuts/create-shortcut?tabs=HTTP
+    #     body = {"path": 'Tables',
+    #             "name": shortcutNameTarget,
+    #             "target": {
+    #                 "oneLake": {
+    #                     "workspaceId": workspaceIdSource,
+    #                     "itemId": itemIdSource,
+    #                     "path": onelakePathSource
+    #                 }
+    #             }
+    #         }
+    #     response = self._lakehouse_create_shortcut(workspaceId=workspaceIdTarget, itemId=itemIdTarget, body=body)
+    #     return response
+
+
+    # def lakehouse_create_shortcut_onelake_file(self, workspaceNameSource:str, lakehouseNameSource:str, onelakePathSource:str, workspaceNameTarget:str, lakehouseNameTarget:str, shortcutNameTarget:str) -> requests.Response:
+    #     workspaceIdSource = self.workspace_get_id(workspaceName=workspaceNameSource)
+    #     itemIdSource = self.lakehouse_get_id(workspaceName=workspaceNameSource, lakehouseName=lakehouseNameSource)
+    #     workspaceIdTarget = self.workspace_get_id(workspaceName=workspaceNameTarget)
+    #     itemIdTarget = self.lakehouse_get_id(workspaceName=workspaceNameTarget, lakehouseName=lakehouseNameTarget)
+    #     # https://learn.microsoft.com/en-us/rest/api/fabric/core/onelake-shortcuts/create-shortcut?tabs=HTTP
+    #     body = {"path": 'Files',
+    #             "name": shortcutNameTarget,
+    #             "target": {
+    #                 "oneLake": {
+    #                     "workspaceId": workspaceIdSource,
+    #                     "itemId": itemIdSource,
+    #                     "path": onelakePathSource
+    #                 }
+    #             }
+    #         }
+    #     response = self._lakehouse_create_shortcut(workspaceId=workspaceIdTarget, itemId=itemIdTarget, body=body)
+    #     return response
+    
 
     def connection_list_response(self) -> List[requests.Response]:
         response = self.request(method='get', url='https://api.powerbi.com/v2.0/myorg/me/gatewayClusterDatasources?$expand=users')
@@ -601,7 +708,7 @@ class fabric_rest():
     
 
     def lakehouse_list_response(self, workspaceName:str) -> requests.Response:
-        lakehouseResponse = self.item_get_response(workspaceName=workspaceName, itemType='Lakehouse')
+        lakehouseResponse = self.item_list_response(workspaceName=workspaceName, itemType='Lakehouse')
         return lakehouseResponse
     
 
@@ -639,8 +746,12 @@ class fabric_rest():
     
 
     # Is not supported yet
+    # https://learn.microsoft.com/en-us/rest/api/fabric/lakehouse/items/delete-lakehouse?tabs=HTTP
     def lakehouse_delete(self, workspaceName:str, lakehouseName:str) -> str:
-        response = self.item_delete(workspaceName=workspaceName, itemName=lakehouseName)
+        # response = self.item_delete(workspaceName=workspaceName, itemName=lakehouseName)
+        workspaceId = self.workspace_get_id(workspaceName=workspaceName)
+        lakehouseId = self.lakehouse_get_id(workspaceName=workspaceName, lakehouseName=lakehouseName)
+        response = self.request(method='delete', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/lakehouses/{lakehouseId}')
         return response
 
     
@@ -667,20 +778,35 @@ class fabric_rest():
         return response
     
 
-    def lakehouse_get_tables_response(self, workspaceName:str, lakehouseName:str) -> requests.Response:
+    def lakehouse_list_tables_response(self, workspaceName:str, lakehouseName:str) -> requests.Response:
         workspaceId = self.workspace_get_id(workspaceName=workspaceName)
         lakehouseId = self.lakehouse_get_id(workspaceName=workspaceName, lakehouseName=lakehouseName)
         response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/lakehouses/{lakehouseId}/tables')
         return response
 
 
-    def lakehouse_get_tables(self, workspaceName:str, lakehouseName:str) -> list:
-        lakehouseTableList = self.response_list_unravel(self.lakehouse_get_tables_response(workspaceName=workspaceName, lakehouseName=lakehouseName), param='data')
-        return lakehouseTableList
+    def lakehouse_list_tables(self, workspaceName:str, lakehouseName:str) -> list:
+        lakehouseTablesList = self.response_list_unravel(self.lakehouse_list_tables_response(workspaceName=workspaceName, lakehouseName=lakehouseName), param='data')
+        return lakehouseTablesList
 
+
+    # # Testing - not working
+    # def lakehouse_list_files_response(self, workspaceName:str, lakehouseName:str) -> requests.Response:
+    #     workspaceId = self.workspace_get_id(workspaceName=workspaceName)
+    #     lakehouseId = self.lakehouse_get_id(workspaceName=workspaceName, lakehouseName=lakehouseName)
+    #     response = self.request(method='get', url=f'https://api.fabric.microsoft.com/v1/workspaces/{workspaceId}/lakehouses/{lakehouseId}/files')
+    #     return response
+
+
+    # # Testing - not working
+    # def lakehouse_list_files(self, workspaceName:str, lakehouseName:str) -> list:
+    #     lakehouseFilesList = self.response_list_unravel(self.lakehouse_list_files_response(workspaceName=workspaceName, lakehouseName=lakehouseName), param='data')
+    #     return lakehouseFilesList
+
+    
 
     def sqlendpoint_list_response(self, workspaceName:str) -> requests.Response:
-        sqlendpointResponse = self.item_get_response(workspaceName=workspaceName, itemType='SqlEndpoint')
+        sqlendpointResponse = self.item_list_response(workspaceName=workspaceName, itemType='SqlEndpoint')
         return sqlendpointResponse
 
 
@@ -793,7 +919,7 @@ class fabric_rest():
     
 
     def warehouse_list_response(self, workspaceName:str) -> List[requests.Response]:
-        warehouseResponse = self.item_get_response(workspaceName=workspaceName, itemType='Warehouse')
+        warehouseResponse = self.item_list_response(workspaceName=workspaceName, itemType='Warehouse')
         return warehouseResponse
     
     
