@@ -1,3 +1,5 @@
 
 CapacityAutoScale/SAMPLE.md
 .DS_Store
+/FabricAPI/.venv
+*.pyc
