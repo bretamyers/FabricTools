@@ -47,7 +47,7 @@ if response.status_code == 202:
         if response.json().get('status') == 'Succeeded':
             response = requests.request(method='get', url=f"{response.headers.get('Location')}", headers=header)
             print(" "*50) # Clears the previous print statement
-            displayHTML(f"""<p>Notebook created <a href="https://app.fabric.microsoft.com/groups/{spark.conf.get('trident.workspace.id')}/synapsenotebooks/{response.json().get('id')}?experience=data-engineering">NB_DW_Load_Cost_Analyzer</a></p>""")
+            displayHTML(f"""<a href="https://app.fabric.microsoft.com/groups/{spark.conf.get('trident.workspace.id')}/synapsenotebooks/{response.json().get('id')}?experience=data-engineering">NB_DW_Load_Cost_Analyzer</a>""")
             break
         else:
             time.sleep(int(response.headers.get('Retry-After')))
