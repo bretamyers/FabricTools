@@ -41,12 +41,13 @@ body = {
 response = requests.request(method='post', url=f"https://api.fabric.microsoft.com/v1/workspaces/{spark.conf.get('trident.workspace.id')}/notebooks",headers=header, data=json.dumps(body))
     
 if response.status_code == 202:
-    print('Notebook is creating...')
+    print('Notebook is creating...', end='\r')
     for retry in range(5):
         response = requests.request(method='get', url=response.headers.get('Location'), headers=header)
         if response.json().get('status') == 'Succeeded':
             response = requests.request(method='get', url=f"{response.headers.get('Location')}", headers=header)
-            displayHTML(f"""<a href="https://app.fabric.microsoft.com/groups/{spark.conf.get('trident.workspace.id')}/synapsenotebooks/{response.json().get('id')}?experience=data-engineering">NB_DW_Load_Cost_Analyzer</a>""")
+            print(" "*50) # Clears the previous print statement
+            displayHTML(f"""<p>Notebook created <a href="https://app.fabric.microsoft.com/groups/{spark.conf.get('trident.workspace.id')}/synapsenotebooks/{response.json().get('id')}?experience=data-engineering">NB_DW_Load_Cost_Analyzer</a></p>""")
             break
         else:
             time.sleep(int(response.headers.get('Retry-After')))
