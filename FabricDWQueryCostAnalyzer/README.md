@@ -1,4 +1,17 @@
-## How to deploy
+# Fabric Data Warehouse Query Cost Analyzer
+
+
+#### Description
+The Fabric Data Warehouse Query Cost Analyzer is a packaged solution that allows you to easily capture and store the capacity unit seconds (CUs) that a query used. The NB_DW_Load_Cost_Analyzer script allows you to define a data warehouse, a set of queries to be executed, and a concurrency number to specify how many queries you want to execute at once.
+
+The solution will deploy all required artifacts (two Lakehouse, a Data Warehouse, and setup and query capturing notebooks) that includes a sample dataset and queries that will be executed and metrics captured as part of the deployment.
+
+
+#### Prerequisites
+1. The [Fabric Capacity Metrics App](https://learn.microsoft.com/en-us/fabric/enterprise/metrics-app-install?tabs=1st) installed and configured.
+
+
+#### How to deploy
 
 1. Create a Fabric workspace and assign either a trial or Fabric capacity to the workspace.
 2. Create a notebook artifact within the workspace.
@@ -43,3 +56,12 @@ else:
 4. Click on the cells output hyperlink.
 6. Update the "CapacityMetricsWorkspace" and "CapacityMetricsDataset" in the first cell.
 7. Click on the "Run all" button in the top toolbar.
+
+#### Solution Artifacts
+Name | Type | Description
+-|-|-
+LH_QueryResults | Lakehouse | A lakehouse that is used to store the query results. It contains two tables.
+LH_SampleData | Lakehouse | A lakehouse that contains a sample dataset (Wide World Importers DW)
+WH_SampleData | Data Warehouse | A data warehouse that contains a sample dataset (Wide World Importers DW)
+NB_DW_Load_Cost_Analyzer | Notebook | A notebook that executes and captures the query results into the LH_QueryResults tables. This is the primary notebook where you can defined the paramters and queries to be used.
+NB_Setup_DW_Query_Analyzer | Notebook | A notebook that deploys all the required artifacts to run the sample queries and captures the results.
