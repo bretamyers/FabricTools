@@ -58,6 +58,8 @@ else:
 6. Update the "CapacityMetricsWorkspace" and "CapacityMetricsDataset" in the first cell.
 7. Click on the "Run all" button in the top toolbar.
 
+After the process has deployed and an execution with the sample dataset has completed, the lakehouse **LH_QueryResults** will contain two tables **QueryResults** and **RunResults**. The **QueryResults** table will contain the individial queries that were executed as part of an execution. The **RunResults** will contain the overall run metrics (an aggregate of the query metrics).
+
 #### Solution Artifacts
 Name | Type | Description
 -|-|-
