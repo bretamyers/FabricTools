@@ -25,7 +25,7 @@ header = {'Authorization': f'Bearer {mssparkutils.credentials.getToken("pbi")}',
 response = requests.get(url)
 
 body = {
-    "displayName": "NB_Setup_DW_Query_Analyzer_221236",
+    "displayName": "NB_Setup_DW_Query_Analyzer",
     "definition": {
         "format": "ipynb",
         "parts": [
@@ -49,7 +49,7 @@ if response.status_code == 202:
             displayHTML(f"""<a href="https://app.fabric.microsoft.com/groups/{spark.conf.get('trident.workspace.id')}/synapsenotebooks/{response.json().get('id')}?experience=data-engineering">NB_DW_Load_Cost_Analyzer</a>""")
             break
         else:
-            time.sleep(int(response.headers.get('Retry-After')
+            time.sleep(int(response.headers.get('Retry-After')))
 else:
     print(f'Error in creating notebook - {response.text}')
 ```
