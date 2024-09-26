@@ -54,8 +54,8 @@ if response.status_code == 202:
 else:
     print(f'Error in creating notebook - {response.text}')
 ```
-4. Click on the cells output hyperlink.
-6. Update the "CapacityMetricsWorkspace" and "CapacityMetricsDataset" in the first cell.
+4. Click on the cells output hyperlink to navigate to the setup notebook.
+6. In the setup notebook, update the **CapacityMetricsWorkspace** and **CapacityMetricsDataset** in the first cell to match the capacity metrics workspace and dataset name that you have access to.
 7. Click on the "Run all" button in the top toolbar.
 
 After the process has deployed and an execution with the sample dataset has completed, the lakehouse **LH_QueryResults** will contain two tables **QueryResults** and **RunResults**. The **QueryResults** table will contain the individial queries that were executed as part of an execution. The **RunResults** will contain the overall run metrics (an aggregate of the query metrics).
