@@ -9,3 +9,4 @@ FabricAPI/v2/temp.py
 FabricAPI/_cache_token.json
 FabricAPI/LoggingTesting/*
 FabricAPI/v3/__pycache__/_rest.cpython-312.pyc
+/scratch

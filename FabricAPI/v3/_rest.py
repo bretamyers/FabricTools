@@ -10,6 +10,10 @@ from typing import List, Iterator
 logger = logging.getLogger(__name__)
 
 
+class FabricRest():
+    pass
+
+
 class FabricRestResponse():
     def __init__(self, method:str='', url:str='', body:dict={}, parser:str='value', parameters:dict={}) -> None:
         self.header = self.create_header(audience='pbi')
@@ -54,7 +58,6 @@ class FabricRestResponse():
                     make_request(method='get', url=f'{response.json().get("continuationUri")}')
             except requests.exceptions.HTTPError as errh:
                 ## Add a step to check if the error is due to throttling and wait until the restriction is lifted
-                # print(f'{errh.response.json()["message"]=}')
                 if 'Request is blocked by the upstream service until:' in errh.response.json()['message']:
                     blockedDatetime = datetime.datetime.strptime(errh.response.json()['message'].split('Request is blocked by the upstream service until: ')[1], '%m/%d/%Y %I:%M:%S %p')
                     sleepDuration = math.ceil((blockedDatetime - datetime.datetime.now(datetime.UTC).replace(tzinfo=None)).total_seconds())
