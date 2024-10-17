@@ -1,5 +1,14 @@
-
 CapacityAutoScale/SAMPLE.md
 .DS_Store
 /FabricAPI/.venv
 *.pyc
+FabricAPI/.venv/*
+FabricAPI/__pycache__/*
+FabricAPI/.env.toml
+FabricAPI/test.py
+FabricAPI/v2/__pycache__
+FabricAPI/v2/temp.py
+FabricAPI/_cache_token.json
+FabricAPI/LoggingTesting/*
+FabricAPI/v3/__pycache__/_rest.cpython-312.pyc
+/scratch
