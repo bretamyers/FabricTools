@@ -20,7 +20,7 @@ https://github.com/user-attachments/assets/61895b7e-f0a7-4709-9e02-b82276665261
 import requests, json, base64, time
 from notebookutils import mssparkutils
 
-url = "https://raw.githubusercontent.com/bretamyers/FabricTools/dev/FabricDWQueryCostAnalyzer/src/NB_Setup_DW_Query_Analyzer.ipynb"
+url = "https://raw.githubusercontent.com/bretamyers/FabricTools/main/FabricDWQueryCostAnalyzer/src/NB_Setup_DW_Query_Analyzer.ipynb"
 header = {'Authorization': f'Bearer {mssparkutils.credentials.getToken("pbi")}', "Content-Type": "application/json"}
 response = requests.get(url)
 
