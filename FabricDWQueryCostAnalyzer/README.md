@@ -74,7 +74,7 @@ NB_Setup_DW_Query_Analyzer | Notebook | A notebook that deploys all the required
 <br></br>
 
 #### Data Dictionary
-##### RunResults
+##### [LH_QueryResults].[dbo].[RunResults]
 Column | Description
 -|-
 CompatibilityLevel | The compatibility level of the warehouse.
@@ -110,7 +110,7 @@ CapacityDailyCostReserved | Reserved instance total cost over a 24 hour period b
 
 <br></br>
 
-##### QueryResults
+##### [LH_QueryResults].[dbo].[QueryResults]
 Column | Description
 -|-
 RunId | The run GUID.
