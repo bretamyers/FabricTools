@@ -1,17 +1,17 @@
 # Fabric Data Warehouse Query Cost Analyzer
 
 
-#### Description
+### Description
 The Fabric Data Warehouse Query Cost Analyzer is a packaged solution that allows you to easily capture and store the capacity unit seconds (CUs) that a query used. The NB_DW_Load_Cost_Analyzer script allows you to define a data warehouse, a set of queries to be executed, and a concurrency number to specify how many queries you want to execute at once.
 
 The solution will deploy all required artifacts (two Lakehouse, a Data Warehouse, and setup and query capturing notebooks) that includes a sample dataset and queries that will be executed and metrics captured as part of the deployment.
 
-#### Prerequisites
+### Prerequisites
 1. The [Fabric Capacity Metrics App](https://learn.microsoft.com/en-us/fabric/enterprise/metrics-app-install?tabs=1st) installed and configured.
 
 https://github.com/user-attachments/assets/61895b7e-f0a7-4709-9e02-b82276665261
 
-#### How to deploy
+### How to deploy
 
 1. Create a Fabric workspace and assign either a trial or Fabric capacity to the workspace.
 2. Create a notebook artifact within the workspace.
@@ -62,7 +62,7 @@ After the process has deployed and an execution with the sample dataset has comp
 
 <br></br>
 
-#### Solution Artifacts
+### Solution Artifacts
 Name | Type | Description
 -|-|-
 LH_QueryResults | Lakehouse | A lakehouse that is used to store the query results. It contains two tables.
@@ -73,8 +73,8 @@ NB_Setup_DW_Query_Analyzer | Notebook | A notebook that deploys all the required
 
 <br></br>
 
-#### Data Dictionary
-##### [LH_QueryResults].[dbo].[RunResults]
+## Data Dictionary
+#### [LH_QueryResults].[dbo].[RunResults]
 Column | Description
 -|-
 CompatibilityLevel | The compatibility level of the warehouse.
@@ -110,7 +110,7 @@ CapacityDailyCostReserved | Reserved instance total cost over a 24 hour period b
 
 <br></br>
 
-##### [LH_QueryResults].[dbo].[QueryResults]
+#### [LH_QueryResults].[dbo].[QueryResults]
 Column | Description
 -|-
 RunId | The run GUID.
