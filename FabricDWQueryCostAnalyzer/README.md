@@ -60,6 +60,8 @@ else:
 
 After the process has deployed and an execution with the sample dataset has completed, the lakehouse **LH_QueryResults** will contain two tables **QueryResults** and **RunResults**. The **QueryResults** table will contain the individial queries that were executed as part of an execution. The **RunResults** will contain the overall run metrics (an aggregate of the query metrics).
 
+<br></br>
+
 #### Solution Artifacts
 Name | Type | Description
 -|-|-
@@ -68,3 +70,63 @@ LH_SampleData | Lakehouse | A lakehouse that contains a sample dataset (Wide Wor
 WH_SampleData | Data Warehouse | A data warehouse that contains a sample dataset (Wide World Importers DW)
 NB_DW_Load_Cost_Analyzer | Notebook | A notebook that executes and captures the query results into the LH_QueryResults tables. This is the primary notebook where you can defined the paramters and queries to be used.
 NB_Setup_DW_Query_Analyzer | Notebook | A notebook that deploys all the required artifacts to run the sample queries and captures the results.
+
+<br></br>
+
+#### Data Dictionary
+##### RunResults
+Column | Description
+-|-
+CompatibilityLevel | The compatibility level of the warehouse.
+DWCreateDate | The creation date of the warehouse.
+DWName | The warehouse name.
+DWVersion | The warehouse version.
+DataLakeLogPublishing | The delta lake log publish setting code used at the start of the run.
+DataLakeLogPublishingDesc | The delta lake log publish setting description setting used at the start of the run.
+IsVOrderEnabled | The v-order setting of the warehouse at the start of the run.
+ServerGuid | The server GUID of the warehouse.
+RunStartDateTimeUTC | The start time of the run (UTC).
+RunStartTimeEpoch | The start time of the run (EPOCH).
+RunId | A GUID for the run.
+DWConnectionString | The warehouse connection string to the sql endpoint.
+QueriesExecutedCnt | The number of query executed for the run.
+RunConcurrency | The concurrency number that was used for the run.
+DWGuid | The GUID of the warehouse used.
+WorkspaceName | The workspace name that the warehouse resides.
+WorkspaceGuid | The workspace GUID.
+CapacityName | The Fabric capacity name.
+CapacityGuid | The Fabric capacity GUID.
+CapacitySKU | The Fabric capacity size that set at the start of the run.
+CapacityRegion | The region of the Fabric capacity.
+RunEndDatetimeUTC | The end time of the run (UTC).
+RunEndTimeEpochMS | The end time of the run (EPOCH).
+RunDurationMS | Total run duration in milliseconds.
+RunCUSeconds | Total capacuty unit seconds used across all the queries executed.
+RunCostPayGo | Pay as you go cost in pennies of all the queries executed. This is what the run would cost if capacity is using pay as you go pricing.
+RunCostReserved | Reserved instance cost in pennies of all the queries executed. This is what the run would cost if capacity is using reserved instance pricing.
+CapacityDailyCUSeconds | The total amount of capacity unit seconds for a 24 hour period based on the capacity SKU used.
+CapacityDailyCostPayGo | Pay as you go total cost over a 24 hour period for the capacity SKU used. This is what the query would cost if capacity is using pay as you go pricing.
+CapacityDailyCostReserved | Reserved instance total cost over a 24 hour period besed on the capacity SKU used. This is what the query would cost if capacity is using reserved instance pricing.
+
+<br></br>
+
+##### QueryResults
+Column | Description
+-|-
+RunId | The run GUID.
+QueryId | A GUID for the query.
+QueryStatement | The query statement that was executed.
+QueryStartDateTimeUTC | The start time of the query (UTC).
+QueryEndDateTimeUTC | The end time of the query (UTC).
+ReturnMessage | The full return message of the query.
+QueryStartTimeEpochMS | The start time of the query (EPOCH).
+QueryEndTimeEpochMS | The end time of the query (EPOCH).
+QueryDurationMS | The query duration in milliseconds.
+StatementId | The statement Id of the query.
+QueryHash | The query hash value.
+DistributionRequestId | The distribution request id.
+ResultSet | The results returned from the query in json format.
+QueryCUSeconds | Total capacity unity seconds of the query.
+QueryCostPayGo | Pay as you go cost of the query in pennies. This is what the query would cost if capacity is using pay as you go pricing.
+QueryCostReserved | Reserved instance cost of the query in pennies. This is what the query would cost if capacity is using reserved instance pricing.
+
