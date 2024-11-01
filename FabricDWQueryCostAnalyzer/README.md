@@ -101,7 +101,7 @@ CapacityRegion | The region of the Fabric capacity.
 RunEndDatetimeUTC | The end time of the run (UTC).
 RunEndTimeEpochMS | The end time of the run (EPOCH).
 RunDurationMS | Total run duration in milliseconds.
-RunCUSeconds | Total capacuty unit seconds used across all the queries executed.
+RunCUSeconds | Total capacuty unit seconds used across all the queries executed within the run.
 RunCostPayGo | Pay as you go cost in pennies of all the queries executed. This is what the run would cost if capacity is using pay as you go pricing.
 RunCostReserved | Reserved instance cost in pennies of all the queries executed. This is what the run would cost if capacity is using reserved instance pricing.
 CapacityDailyCUSeconds | The total amount of capacity unit seconds for a 24 hour period based on the capacity SKU used.
