@@ -7,7 +7,7 @@ The Fabric Data Warehouse Query Cost Analyzer is a packaged solution that allows
 The solution will deploy all required artifacts (two Lakehouse, a Data Warehouse, and setup and query capturing notebooks) that includes a sample dataset and queries that will be executed and metrics captured as part of the deployment.
 
 ### Prerequisites
-1. The [Fabric Capacity Metrics App](https://learn.microsoft.com/en-us/fabric/enterprise/metrics-app-install?tabs=1st) installed and configured.
+1. The [Fabric Capacity Metrics App](https://learn.microsoft.com/en-us/fabric/enterprise/metrics-app-install?tabs=1st) installed and configured. The user executing the notebook should have at least contributor permissions on the workspace where the capacity metrics app is installed.
 
 https://github.com/user-attachments/assets/61895b7e-f0a7-4709-9e02-b82276665261
 
