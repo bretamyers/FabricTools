@@ -37,7 +37,7 @@ def create_notebook(notebookName:str):
     response = requests.request(method='post', url=f"https://api.fabric.microsoft.com/v1/workspaces/{spark.conf.get('trident.workspace.id')}/notebooks", headers=header, data=json.dumps(body))
         
     if response.status_code == 202:
-        print('Notebook is creating...', end='\r')
+        print(f'Notebook "{notebookName}" is creating...', end='\r')
         for retry in range(5):
             response = requests.request(method='get', url=response.headers.get('Location'), headers=header)
             if response.json().get('status') == 'Succeeded':
