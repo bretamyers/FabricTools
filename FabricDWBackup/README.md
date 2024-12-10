@@ -11,13 +11,15 @@ import requests, json, base64, time
 from notebookutils import mssparkutils
 
 def get_notebook_definition(notebookName:str):
-    url = f"https://raw.githubusercontent.com/bretamyers/FabricTools/main/DW_Backup_Data/src/{notebookName}.ipynb"
-    header = {'Authorization': f'Bearer {mssparkutils.credentials.getToken("pbi")}', "Content-Type": "application/json"}
+    url = f"https://raw.githubusercontent.com/bretamyers/FabricTools/main/FabricDWBackup/src/{notebookName}.ipynb"
     response = requests.get(url)
     return response.json()
 
 def create_notebook(notebookName:str):
     notebookDefinition = get_notebook_definition(notebookName)
+
+    header = {'Authorization': f'Bearer {mssparkutils.credentials.getToken("pbi")}', "Content-Type": "application/json"}
+    
     body = {
         "displayName": notebookName,
         "definition": {
@@ -41,7 +43,7 @@ def create_notebook(notebookName:str):
             if response.json().get('status') == 'Succeeded':
                 response = requests.request(method='get', url=f"{response.headers.get('Location')}", headers=header)
                 print(" "*50) # Clears the previous print statement
-                displayHTML(f"""Notebook created (click on link and update parameters in notebook) - <a href="https://app.fabric.microsoft.com/groups/{spark.conf.get('trident.workspace.id')}/synapsenotebooks/{response.json().get('id')}?experience=data-engineering">NB_DW_Load_Cost_Analyzer</a>""")
+                displayHTML(f"""Notebook created (click on link and update parameters in notebook) - <a href="https://app.fabric.microsoft.com/groups/{spark.conf.get('trident.workspace.id')}/synapsenotebooks/{response.json().get('id')}?experience=data-engineering">{notebookName}</a>""")
                 break
             else:
                 time.sleep(int(response.headers.get('Retry-After')))
@@ -49,7 +51,7 @@ def create_notebook(notebookName:str):
         print(f'Error in creating notebook - {response.text}')
 
 
-notebookList = ['NB_Setup_DW_Query_Analyzer', 'NB_Setup_DW_Query_Analyzer']
+notebookList = ['NB_Backup_DW_To_LH', 'NB_Restore_DW_From_LH']
 for notebookName in notebookList:
     create_notebook(notebookName)
 ```
