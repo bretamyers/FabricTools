@@ -28,7 +28,7 @@ A workspace where you have *contributor* or higher permissions.
 1. Open a workspace where you have *contributor* or higher permissions. Ideally, this should be a different workspace than where the warehouse is backed up.
 2. Create a notebook within the workspace and copy and paste the python code below into a cell within the notebook.
 3. Run the notebook. This will create a lakehouse within the workspace call "LH_DW_Backups" and two notebooks, one for taking data backups of the warehouse tables and another for restoring the data.
-4. Schedule the notebook "NB_Backup_DW_To_LH" to run on a time period that meets your requirements eg. once a day or once a week.
+4. Schedule the notebook "NB_Backup_DW_To_LH" to run on a time period that meets your requirements e.g. once a day or once a week.
 
 
 ```python
