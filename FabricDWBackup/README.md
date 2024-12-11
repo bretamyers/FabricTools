@@ -10,10 +10,13 @@ An art of the possible solution to demonstrate how you implemented data backups 
 - Take that list and rewrites the data in the lakehouse LH_DW_Backups in delta format landing following pattern {workspace_name}/{warehouse name}/{yyyyMMdd_HHmm}/{schema_name}/{table_name}.
 
 #### NB_Restore_DW_From_LH
+> [!IMPORTANT]
+> The warehouse should exist and the sql database project should have been deployed prior to running this notebook so that the tables are present.
 - This notebook will scane the onelake location of the target warehouse restore datetime location to get a list of all the tables to be restored.
 - Create a temporary lakehouse in the workspace where the target warehouse exists with the following naming convention "LH_temp_retore_{warehouse_name}_{backup_datetime}".
 - Create OneLake *Table* shortcuts for each table that is being restored with the following naming convention "{schema_name}_{table_name}".
 - Loop through each table and execute the sql statements that truncates the target table first and then performs a INSERT INTO statement to move data from the lakehouse table shortcut to the warehouse table.
+
 
 ### Prerequisites
 A workspace where you have *contributor* or higher permissions.
@@ -51,7 +54,6 @@ def create_lakehouse_backups(lakehouseBackupName:str):
     
 
 def create_notebook(notebookName:str, lakehouseBackupName:str):
-
     create_lakehouse_backups(lakehouseBackupName)
     notebookDefinition = get_notebook_definition(notebookName)
 
