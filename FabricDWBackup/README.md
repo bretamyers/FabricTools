@@ -13,7 +13,7 @@ An art of the possible solution to demonstrate how you implemented data backups 
 
 #### NB_Restore_DW_From_LH
 > [!IMPORTANT]
-> **The warehouse should exist and the sql database project should have been deployed prior to running this notebook so that the tables are present.**
+> **The warehouse should exist and the sql database project should have been deployed prior to running this notebook so that the tables are present at execution of the notebook.**
 - This notebook will scan the onelake location of the target warehouse restore datetime location to get a list of all the tables to be restored.
 - Create a temporary lakehouse in the workspace where the target warehouse exists with the naming convention "LH_temp_retore_{warehouse_name}_{backup_datetime}".
 - Create OneLake *Table* shortcuts for each table that is being restored with the naming convention "{schema_name}_{table_name}".
