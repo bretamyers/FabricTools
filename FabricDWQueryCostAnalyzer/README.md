@@ -87,6 +87,7 @@ IsVOrderEnabled | The v-order setting of the warehouse at the start of the run.
 ServerGuid | The server GUID of the warehouse.
 RunStartDateTimeUTC | The start time of the run (UTC).
 RunStartTimeEpochMS | The start time of the run (EPOCH).
+RunName | The name of the run. If not specified, one will be generated with the following format '*Run_{yyyyMMdd}_{hhmmss}*'.
 RunId | A GUID for the run.
 DWConnectionString | The warehouse connection string to the sql endpoint.
 QueriesExecutedCnt | The number of query executed for the run.
