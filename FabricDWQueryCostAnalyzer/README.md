@@ -78,7 +78,7 @@ NB_Setup_DW_Query_Analyzer | Notebook | A notebook that deploys all the required
 Column | Description
 -|-
 RunName | The name of the run. If not specified, one will be generated with the following format '*Run_{yyyyMMdd}_{hhmmss}*'.
-RunId | A GUID for the run.
+RunId | A generated GUID for the run.
 DWConnectionString | The warehouse connection string to the sql endpoint.
 QueriesExecutedCnt | The number of query executed for the run.
 RunConcurrency | The concurrency number that was used for the run.
@@ -116,7 +116,7 @@ CapacityDailyCostReserved | Reserved instance total cost over a 24 hour period b
 Column | Description
 -|-
 RunId | The run GUID.
-QueryId | A GUID for the query.
+QueryId | A generated GUID for the query.
 QueryStatement | The query statement that was executed.
 QueryStartDateTimeUTC | The start time of the query (UTC).
 QueryEndDateTimeUTC | The end time of the query (UTC).
