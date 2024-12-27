@@ -77,28 +77,29 @@ NB_Setup_DW_Query_Analyzer | Notebook | A notebook that deploys all the required
 #### [LH_QueryResults].[dbo].[RunResults]
 Column | Description
 -|-
-CompatibilityLevel | The compatibility level of the warehouse.
-DWCreateDate | The creation date of the warehouse.
-DWName | The warehouse name.
-DWVersion | The warehouse version.
-DataLakeLogPublishing | The delta lake log publish setting code used at the start of the run.
-DataLakeLogPublishingDesc | The delta lake log publish setting description setting used at the start of the run.
-IsVOrderEnabled | The v-order setting of the warehouse at the start of the run.
-ServerGuid | The server GUID of the warehouse.
-RunStartDateTimeUTC | The start time of the run (UTC).
-RunStartTimeEpochMS | The start time of the run (EPOCH).
 RunName | The name of the run. If not specified, one will be generated with the following format '*Run_{yyyyMMdd}_{hhmmss}*'.
 RunId | A GUID for the run.
 DWConnectionString | The warehouse connection string to the sql endpoint.
 QueriesExecutedCnt | The number of query executed for the run.
 RunConcurrency | The concurrency number that was used for the run.
+StoreQueryResults | The stored query results flag used during the run. A *false* value means that results will not be saved in the QueryResults table.
+ServerGuid | The server GUID of the warehouse.
 DWGuid | The GUID of the warehouse used.
+DWName | The warehouse name.
+DWVersion | The warehouse version.
 WorkspaceName | The workspace name that the warehouse resides.
 WorkspaceGuid | The workspace GUID.
 CapacityName | The Fabric capacity name.
 CapacityGuid | The Fabric capacity GUID.
 CapacitySKU | The Fabric capacity size that set at the start of the run.
 CapacityRegion | The region of the Fabric capacity.
+CompatibilityLevel | The compatibility level of the warehouse.
+DWCreateDate | The creation date of the warehouse.
+DataLakeLogPublishing | The delta lake log publish setting code used at the start of the run.
+DataLakeLogPublishingDesc | The delta lake log publish setting description setting used at the start of the run.
+IsVOrderEnabled | The v-order setting of the warehouse at the start of the run.
+RunStartDateTimeUTC | The start time of the run (UTC).
+RunStartTimeEpochMS | The start time of the run (EPOCH).
 RunEndDatetimeUTC | The end time of the run (UTC).
 RunEndTimeEpochMS | The end time of the run (EPOCH).
 RunDurationMS | Total run duration in milliseconds.
