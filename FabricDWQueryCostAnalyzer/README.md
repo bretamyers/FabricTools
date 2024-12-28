@@ -127,7 +127,8 @@ QueryDurationMS | The query duration in milliseconds.
 StatementId | The statement Id of the query.
 QueryHash | The query hash value.
 DistributionRequestId | The distribution request id.
-ResultSet | The results returned from the query in json format.
+ResultSet | The results returned from the query in json format. A parameter can be set *StoreQueryResults* to not store the results in the table.
+ResultRowCnt | The number of row for each result set.
 QueryCUSeconds | Total capacity unity seconds of the query.
 QueryCostPayGo | Pay as you go cost of the query in pennies. This is what the query would cost if capacity is using pay as you go pricing.
 QueryCostReserved | Reserved instance cost of the query in pennies. This is what the query would cost if capacity is using reserved instance pricing.
