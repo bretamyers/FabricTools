@@ -82,6 +82,7 @@ RunId | A generated GUID for the run.
 DWConnectionString | The warehouse connection string to the sql endpoint.
 QueriesExecutedCnt | The number of query executed for the run.
 RunConcurrency | The concurrency number that was used for the run.
+QueryRepeatCount | The number of times a query will run (should be between 1 and 4) eg. QueryRepeatCount = 4 and queryList = [query1, query2] will become [query1, query1, query1, query1, query2, query2, query2]. This is useful when comparing query durations between cold and warm caches.
 StoreQueryResults | The stored query results flag used during the run. A *false* value means that results will not be saved in the QueryResults table.
 ServerGuid | The server GUID of the warehouse.
 DWGuid | The GUID of the warehouse used.
