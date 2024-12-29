@@ -67,7 +67,7 @@ Name | Type | Description
 -|-|-
 LH_QueryResults | Lakehouse | A lakehouse that is used to store the query results. It contains two tables.
 LH_SampleData | Lakehouse | A lakehouse that contains a sample dataset (Wide World Importers DW)
-WH_SampleData | Data Warehouse | A data warehouse that contains a sample dataset (Wide World Importers DW)
+WH_SampleData | Warehouse | A warehouse that contains a sample dataset (Wide World Importers DW)
 NB_DW_Load_Cost_Analyzer | Notebook | A notebook that executes and captures the query results into the LH_QueryResults tables. This is the primary notebook where you can defined the paramters and queries to be used.
 NB_Setup_DW_Query_Analyzer | Notebook | A notebook that deploys all the required artifacts to run the sample queries and captures the results.
 
