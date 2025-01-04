@@ -2,7 +2,7 @@
 
 
 ### Description
-The Fabric Data Warehouse Query Cost Analyzer is a packaged solution that allows you to easily capture and store the capacity unit seconds (CUs) that a query used. The NB_DW_Load_Cost_Analyzer script allows you to define a data warehouse, a set of queries to be executed, and a concurrency number to specify how many queries you want to execute at once.
+The Fabric Data Warehouse Query Cost Analyzer is a packaged solution that allows you to easily capture and store the capacity unit seconds (CUs) that a query used. The NB_Query_Cost_Analyzer script allows you to define a data warehouse, a set of queries to be executed, and a concurrency number to specify how many queries you want to execute at once.
 
 The solution will deploy all required artifacts (two Lakehouse, a Data Warehouse, and setup and query capturing notebooks) that includes a sample dataset and queries that will be executed and metrics captured as part of the deployment.
 
@@ -47,7 +47,7 @@ if response.status_code == 202:
         if response.json().get('status') == 'Succeeded':
             response = requests.request(method='get', url=f"{response.headers.get('Location')}", headers=header)
             print(" "*50) # Clears the previous print statement
-            displayHTML(f"""Notebook created (click on link and update parameters in notebook) - <a href="https://app.fabric.microsoft.com/groups/{spark.conf.get('trident.workspace.id')}/synapsenotebooks/{response.json().get('id')}?experience=data-engineering">NB_DW_Load_Cost_Analyzer</a>""")
+            displayHTML(f"""Notebook created (click on link and update parameters in notebook) - <a href="https://app.fabric.microsoft.com/groups/{spark.conf.get('trident.workspace.id')}/synapsenotebooks/{response.json().get('id')}?experience=data-engineering">NB_Query_Cost_Analyzer</a>""")
             break
         else:
             time.sleep(int(response.headers.get('Retry-After')))
@@ -68,7 +68,7 @@ Name | Type | Description
 LH_QueryResults | Lakehouse | A lakehouse that is used to store the query results. It contains two tables.
 LH_SampleData | Lakehouse | A lakehouse that contains a sample dataset (Wide World Importers DW)
 WH_SampleData | Warehouse | A warehouse that contains a sample dataset (Wide World Importers DW)
-NB_DW_Load_Cost_Analyzer | Notebook | A notebook that executes and captures the query results into the LH_QueryResults tables. This is the primary notebook where you can defined the paramters and queries to be used.
+NB_Query_Cost_Analyzer | Notebook | A notebook that executes and captures the query results into the LH_QueryResults tables. This is the primary notebook where you can defined the paramters and queries to be used.
 NB_Setup_DW_Query_Analyzer | Notebook | A notebook that deploys all the required artifacts to run the sample queries and captures the results.
 
 <br></br>
@@ -84,7 +84,9 @@ QueriesExecutedCnt | The number of query executed for the run.
 RunConcurrency | The concurrency number that was used for the run.
 QueryRepeatCount | The number of times a query will run (should be between 1 and 4) eg. QueryRepeatCount = 4 and queryList = [query1, query2] will become [query1, query1, query1, query1, query2, query2, query2]. This is useful when comparing query durations between cold and warm caches.
 StoreQueryResults | The stored query results flag used during the run. A *false* value means that results will not be saved in the QueryResults table.
+StoreQueryResults | The specified parameter used to determine if the query results should be stored in the QueryResultsTable.
 ServerGuid | The server GUID of the warehouse.
+ItemType | The type of artifacts the queries were executed against ['Lakehouse', 'Warehouse']
 DWGuid | The GUID of the warehouse used.
 DWName | The warehouse name.
 DWVersion | The warehouse version.
@@ -118,6 +120,10 @@ Column | Description
 -|-
 RunId | The run GUID.
 QueryId | A generated GUID for the query.
+WorkerNum | The worker number executing the pool of queries.
+WorkerQueryNum | The query number from the query pool for a worker.
+QueryUniqueNum | The unique query number of the list of queries provided. Eg. QueryList = ['q1', 'q2] with QueryRepeatNum = 3 produces a pool of queries to be executed of ['q1', 'q1', 'q1', 'q2', 'q2', 'q2] per worker, the 'q1' in the list would have a QueryUniqueNum of 1.
+QueryRepeatNum | The query repeat number of the queries provided. Eg. QueryList = ['q1', 'q2] with QueryRepeatNum = 3 produces a pool of queries to be executed of ['q1', 'q1', 'q1', 'q2', 'q2', 'q2] per worker, the second 'q1' in the list would have a QueryRepeatNum of 2.
 QueryStatement | The query statement that was executed.
 QueryStartDateTimeUTC | The start time of the query (UTC).
 QueryEndDateTimeUTC | The end time of the query (UTC).
