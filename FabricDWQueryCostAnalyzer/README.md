@@ -20,12 +20,12 @@ https://github.com/user-attachments/assets/61895b7e-f0a7-4709-9e02-b82276665261
 import requests, json, base64, time
 from notebookutils import mssparkutils
 
-url = "https://raw.githubusercontent.com/bretamyers/FabricTools/main/FabricDWQueryCostAnalyzer/src/NB_Setup_DW_Query_Analyzer.ipynb"
+url = "https://raw.githubusercontent.com/bretamyers/FabricTools/main/FabricDWQueryCostAnalyzer/src/NB_Setup_Query_Cost_Analyzer.ipynb"
 header = {'Authorization': f'Bearer {mssparkutils.credentials.getToken("pbi")}', "Content-Type": "application/json"}
 response = requests.get(url)
 
 body = {
-    "displayName": "NB_Setup_DW_Query_Analyzer",
+    "displayName": "NB_Setup_Query_Cost_Analyzer",
     "definition": {
         "format": "ipynb",
         "parts": [
@@ -69,7 +69,7 @@ LH_QueryResults | Lakehouse | A lakehouse that is used to store the query result
 LH_SampleData | Lakehouse | A lakehouse that contains a sample dataset (Wide World Importers DW)
 WH_SampleData | Warehouse | A warehouse that contains a sample dataset (Wide World Importers DW)
 NB_Query_Cost_Analyzer | Notebook | A notebook that executes and captures the query results into the LH_QueryResults tables. This is the primary notebook where you can defined the paramters and queries to be used.
-NB_Setup_DW_Query_Analyzer | Notebook | A notebook that deploys all the required artifacts to run the sample queries and captures the results.
+NB_Setup_Query_Cost_Analyzer | Notebook | A notebook that deploys all the required artifacts to run the sample queries and captures the results.
 
 <br></br>
 
