@@ -102,9 +102,9 @@ DataLakeLogPublishing | The delta lake log publish setting code used at the star
 DataLakeLogPublishingDesc | The delta lake log publish setting description setting used at the start of the run.
 IsVOrderEnabled | The v-order setting of the warehouse at the start of the run.
 RunStartDateTimeUTC | The start time of the run (UTC).
-RunStartTimeEpochMS | The start time of the run (EPOCH).
-RunEndDatetimeUTC | The end time of the run (UTC).
-RunEndTimeEpochMS | The end time of the run (EPOCH).
+RunStartDateTimeEpochMS | The start time of the run (EPOCH).
+RunEndDateTimeUTC | The end time of the run (UTC).
+RunEndDateTimeEpochMS | The end time of the run (EPOCH).
 RunDurationMS | Total run duration in milliseconds.
 RunCUSeconds | Total capacuty unit seconds used across all the queries executed within the run.
 RunCostPayGo | Pay as you go cost in pennies of all the queries executed. This is what the run would cost if capacity is using pay as you go pricing.
@@ -128,8 +128,8 @@ QueryStatement | The query statement that was executed.
 QueryStartDateTimeUTC | The start time of the query (UTC).
 QueryEndDateTimeUTC | The end time of the query (UTC).
 ReturnMessage | The full return message of the query.
-QueryStartTimeEpochMS | The start time of the query (EPOCH).
-QueryEndTimeEpochMS | The end time of the query (EPOCH).
+QueryStartDateTimeEpochMS | The start time of the query (EPOCH).
+QueryEndDateTimeEpochMS | The end time of the query (EPOCH).
 QueryDurationMS | The query duration in milliseconds.
 StatementId | The statement Id of the query.
 QueryHash | The query hash value.
