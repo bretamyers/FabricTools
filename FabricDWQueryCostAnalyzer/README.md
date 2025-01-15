@@ -107,8 +107,8 @@ RunEndDateTimeUTC | The end time of the run (UTC).
 RunEndDateTimeEpochMS | The end time of the run (EPOCH).
 RunDurationMS | Total run duration in milliseconds.
 RunCUSeconds | Total capacuty unit seconds used across all the queries executed within the run.
-RunCostPayGo | Pay as you go cost in pennies of all the queries executed. This is what the run would cost if capacity is using pay as you go pricing.
-RunCostReserved | Reserved instance cost in pennies of all the queries executed. This is what the run would cost if capacity is using reserved instance pricing.
+RunCostPayGo | Pay as you go cost in dollars of all the queries executed. This is what the run would cost if capacity is using pay as you go pricing.
+RunCostReserved | Reserved instance cost in dollars of all the queries executed. This is what the run would cost if capacity is using reserved instance pricing.
 CapacityDailyCUSeconds | The total amount of capacity unit seconds for a 24 hour period based on the capacity SKU used.
 CapacityDailyCostPayGo | Pay as you go total cost over a 24 hour period for the capacity SKU used. This is what the query would cost if running for 24 hours and is using pay as you go pricing.
 CapacityDailyCostReserved | Reserved instance total cost over a 24 hour period besed on the capacity SKU used. This is what the capacity would cost if running for 24 hours and is using reserved instance pricing.
@@ -137,6 +137,6 @@ DistributionRequestId | The distribution request id.
 ResultSet | The results returned from the query in json format. A parameter can be set *StoreQueryResults* to not store the results in the table.
 ResultRowCnt | The number of row for each result set.
 QueryCUSeconds | Total capacity unity seconds of the query.
-QueryCostPayGo | Pay as you go cost of the query in pennies. This is what the query would cost if capacity is using pay as you go pricing.
-QueryCostReserved | Reserved instance cost of the query in pennies. This is what the query would cost if capacity is using reserved instance pricing.
+QueryCostPayGo | Pay as you go cost of the query in dollars. This is what the query would cost if capacity is using pay as you go pricing.
+QueryCostReserved | Reserved instance cost of the query in dollars. This is what the query would cost if capacity is using reserved instance pricing.
 
