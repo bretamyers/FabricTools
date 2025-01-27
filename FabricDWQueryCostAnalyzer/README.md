@@ -112,13 +112,18 @@ RunCostReserved | Reserved instance cost in dollars of all the queries executed.
 CapacityDailyCUSeconds | The total amount of capacity unit seconds for a 24 hour period based on the capacity SKU used.
 CapacityDailyCostPayGo | Pay as you go total cost over a 24 hour period for the capacity SKU used. This is what the query would cost if running for 24 hours and is using pay as you go pricing.
 CapacityDailyCostReserved | Reserved instance total cost over a 24 hour period besed on the capacity SKU used. This is what the capacity would cost if running for 24 hours and is using reserved instance pricing.
+RunDataScannedDiskMB | The total amount of data scanned/read from local disk for the run. The data scanned from disk and memory together indicate how much data was read from cache.
+RunDataScannedMemoryMB | The total amount of data scanned from local memory for the run. The data scanned from disk and memory together indicate how much data was read from cache.
+RunDataScannedRemoteStorageMB | The total amount of data scanned/read from remote storage (OneLake) for the run.
+RunAllocatedCpuTimeMS | The total time of CPUs that was allocated for all the queries in the run.
 
 <br></br>
 
 #### [LH_QueryResults].[dbo].[QueryResults]
 Column | Description
 -|-
-RunId | The run GUID.
+RunName | The name of the run. If not specified, one will be generated with the following format '*Run_{yyyyMMdd}_{hhmmss}*'.
+RunId | The run GUID. 
 QueryId | A generated GUID for the query.
 WorkerNum | The worker number executing the pool of queries.
 WorkerQueryNum | The query number from the query pool for a worker.
@@ -139,4 +144,8 @@ ResultRowCnt | The number of row for each result set.
 QueryCUSeconds | Total capacity unity seconds of the query.
 QueryCostPayGo | Pay as you go cost of the query in dollars. This is what the query would cost if capacity is using pay as you go pricing.
 QueryCostReserved | Reserved instance cost of the query in dollars. This is what the query would cost if capacity is using reserved instance pricing.
-
+DataScannedDiskMB | The amount of data scanned/read from local disk. The data scanned from disk and memory together indicate how much data was read from cache.
+DataScannedMemoryMB | The amount of data scanned from local memory. The data scanned from disk and memory together indicate how much data was read from cache.
+DataScannedRemoteStorageMB | The amount of data scanned/read from remote storage (OneLake).
+ResultCacheHit | An indicator if the the resultset cache was used.
+AllocatedCpuTimeMS | The total time of CPUs that was allocated for the query's execution.
