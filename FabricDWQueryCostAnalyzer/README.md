@@ -79,28 +79,27 @@ Column | Description
 -|-
 RunName | The name of the run. If not specified, one will be generated with the following format '*Run_{yyyyMMdd}_{hhmmss}*'.
 RunId | A generated GUID for the run.
-DWConnectionString | The warehouse connection string to the sql endpoint.
 QueriesExecutedCnt | The number of query executed for the run.
 RunConcurrency | The concurrency number that was used for the run.
 QueryRepeatCount | The number of times a query will run (should be between 1 and 4) eg. QueryRepeatCount = 4 and queryList = [query1, query2] will become [query1, query1, query1, query1, query2, query2, query2]. This is useful when comparing query durations between cold and warm caches.
 StoreQueryResults | The stored query results flag used during the run. A *false* value means that results will not be saved in the QueryResults table.
-StoreQueryResults | The specified parameter used to determine if the query results should be stored in the QueryResultsTable.
-ServerGuid | The server GUID of the warehouse.
 ItemType | The type of artifacts the queries were executed against ['Lakehouse', 'Warehouse']
-DWGuid | The GUID of the warehouse used.
 DWName | The warehouse name.
+ServerGuid | The server GUID of the warehouse.
+DWGuid | The GUID of the warehouse used.
+DWConnectionString | The warehouse connection string to the sql endpoint.
 DWVersion | The warehouse version.
+CompatibilityLevel | The compatibility level of the warehouse.
+DWCreateDate | The creation date of the warehouse.
+DataLakeLogPublishing | The delta lake log publish setting code used at the start of the run.
+DataLakeLogPublishingDesc | The delta lake log publish setting description setting used at the start of the run.
+IsVOrderEnabled | The v-order setting of the warehouse at the start of the run.
 WorkspaceName | The workspace name that the warehouse resides.
 WorkspaceGuid | The workspace GUID.
 CapacityName | The Fabric capacity name.
 CapacityGuid | The Fabric capacity GUID.
 CapacitySKU | The Fabric capacity size that set at the start of the run.
 CapacityRegion | The region of the Fabric capacity.
-CompatibilityLevel | The compatibility level of the warehouse.
-DWCreateDate | The creation date of the warehouse.
-DataLakeLogPublishing | The delta lake log publish setting code used at the start of the run.
-DataLakeLogPublishingDesc | The delta lake log publish setting description setting used at the start of the run.
-IsVOrderEnabled | The v-order setting of the warehouse at the start of the run.
 RunStartDateTimeUTC | The start time of the run (UTC).
 RunStartDateTimeEpochMS | The start time of the run (EPOCH).
 RunEndDateTimeUTC | The end time of the run (UTC).
