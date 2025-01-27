@@ -149,3 +149,32 @@ DataScannedMemoryMB | The amount of data scanned from local memory. The data sca
 DataScannedRemoteStorageMB | The amount of data scanned/read from remote storage (OneLake).
 ResultCacheHit | An indicator if the the resultset cache was used.
 AllocatedCpuTimeMS | The total time of CPUs that was allocated for the query's execution.
+
+<br></br>
+
+#### [LH_QueryResults].[dbo].[QueryInsightsResults]
+Column | Description
+-|-
+RunName | The name of the run. If not specified, one will be generated with the following format '*Run_{yyyyMMdd}_{hhmmss}*'.
+RunId | The run GUID. 
+distributed_statement_id | Unique ID for each query.
+submit_time | Time at which the request was submitted for execution.
+start_time | Time when the query started running.
+end_time | 
+total_elapsed_time_ms | Total time (in milliseconds) taken by the query to finish.
+login_name | Name of the user or system that sent the query.
+row_count | Number of rows retrieved by the query.
+status | Query status: Succeeded, Failed, or Canceled
+session_id | ID linking the query to a specific user session.
+connection_id | Identification number for the query's connection. Nullable.
+program_name | Name of client program that initiated the session. The value is NULL for internal sessions. Is nullable.
+batch_id | ID for grouped queries (if applicable). Nullable.
+root_batch_id | ID for the main group of queries (if nested). Nullable.
+query_hash | Binary hash value calculated on the query and used to identify queries with similar logic. You can use the query hash to correlate between Query Insight views.
+label | Optional label string associated with some SELECT query statements.
+result_cache_hit | A flag to indicate if result cache was used.
+allocated_cpu_time_ms | Shows the total time of CPUs that was allocated for a query's execution.
+data_scanned_remote_storage_mb | Shows how much data was scanned/read from remote storage (One Lake).
+data_scanned_memory_mb | Shows how much data was scanned from local memory. Data scanned from disk and memory together indicates how much data was read from cache.
+data_scanned_disk_mb | Shows how much data was scanned/read from local disk. Data scanned from disk and memory together indicates how much data was read from cache.
+command | Complete text of the executed query.
