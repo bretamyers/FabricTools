@@ -1,8 +1,8 @@
-# Fabric Data Warehouse Query Cost Analyzer
+# Fabric SQL Endpoint Query Cost Analyzer
 
 
 ### Description
-The Fabric Data Warehouse Query Cost Analyzer is a packaged solution that allows you to easily capture and store the capacity unit seconds (CUs) that a query used. The NB_Query_Cost_Analyzer script allows you to define a data warehouse, a set of queries to be executed, and a concurrency number to specify how many queries you want to execute at once.
+The Fabric SQL Endpoint Query Cost Analyzer is a packaged solution that allows you to easily capture and store the capacity unit seconds (CUs) that a query used. The NB_Query_Cost_Analyzer script allows you to define a data warehouse, a set of queries to be executed, and a concurrency number to specify how many queries you want to execute at once.
 
 The solution will deploy all required artifacts (two Lakehouse, a Data Warehouse, and setup and query capturing notebooks) that includes a sample dataset and queries that will be executed and metrics captured as part of the deployment.
 
