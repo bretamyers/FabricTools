@@ -160,7 +160,7 @@ RunId | The run GUID.
 distributed_statement_id | Unique ID for each query.
 submit_time | Time at which the request was submitted for execution.
 start_time | Time when the query started running.
-end_time | 
+end_time | Time when the query ended running.
 total_elapsed_time_ms | Total time (in milliseconds) taken by the query to finish.
 login_name | Name of the user or system that sent the query.
 row_count | Number of rows retrieved by the query.
