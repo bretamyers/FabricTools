@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "FabricWorkspaceFetchProject"
+version = "0.1.0"
+description = "A Python package to fetch Fabric workspace artifacts and save them locally."
+authors = [
+    { name = "Bret Myers", email = "bret.a.myers@gmail.com" }
+]
+dependencies = [
+    "requests",
+    "json",
+    "time"
+]
+
+[tool.setuptools]
+packages = ["FabricWorkspaceFetch"]  # Replace with your actual package name

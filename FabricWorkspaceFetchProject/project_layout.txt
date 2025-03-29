@@ -1,0 +1,42 @@
+project_name/
+├── pyproject.toml         # Project metadata and dependencies (replaces setup.py and requirements.txt in modern projects)
+├── src/
+│   └── project_name/    # Main package directory
+│       ├── __init__.py  # Marks the directory as a Python package (can be empty or contain package-level initialization code)
+│       ├── module1.py   # Python modules containing code
+│       ├── module2.py
+│       └── ...
+├── tests/                # Directory for tests
+│   ├── __init__.py      # Makes tests a package
+│   ├── test_module1.py  # Test files
+│   └── test_module2.py
+├── docs/                 # Documentation files (optional)
+│   ├── conf.py
+│   ├── index.md
+│   └── ...
+├── scripts/              # Executable scripts (optional)
+│   └── script1.py
+├── .gitignore             # Specifies intentionally untracked files that Git should ignore
+├── README.md              # Project description and instructions
+└── LICENSE                # License information
+
+
+project-name/
+├── src/
+│   └── package_name/
+│       ├── __init__.py
+│       ├── module1.py
+│       └── subpackage/
+│           ├── __init__.py
+│           └── module2.py
+├── tests/
+│   └── test_module1.py
+├── README.md
+└── pyproject.toml
+
+
+module = python file
+package = a folder. A container of python modules (python files)
+
+python -m build -e .
+

@@ -15,3 +15,5 @@ FabricAPI/v3/__pycache__/_rest.cpython-312.pyc
 /.venv
 /.needlr
 /FabricWorkspaceFetch/WS_Demo_InternetSales
+/FabricWorkspaceFetch
+/FabricWorkspaceFetchProject/.dev
